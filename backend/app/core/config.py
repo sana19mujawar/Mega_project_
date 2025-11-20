@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 
 class Settings(BaseSettings):
     # Gemini API Config
@@ -12,8 +13,11 @@ class Settings(BaseSettings):
     SENDER_APP_PASSWORD: str = "zitwmwpbswjbuksa"
     
     # MongoDB
-    MONGODB_URL: str = "mongodb+srv://sanamujawar1902:Sana2004@cluster-project.3zty3z8.mongodb.net/8"
-    DATABASE_NAME: str = "HR_AGENT"
+    MONGODB_URL: str = Field(default="mongodb+srv://sanamujawar1902:Sana2004@cluster-project.3zty3z8.mongodb.net/8")
+    DATABASE_NAME: str = Field(default="HR_AGENT")
+    MONGODB_CONNECT_TIMEOUT_MS: int = Field(default=20000)
+    MONGODB_SERVER_SELECTION_TIMEOUT_MS: int = Field(default=20000)
+    MONGODB_ALLOW_INVALID_CERTS: bool = Field(default=False)
     
     # JWT
     JWT_SECRET: str = "your-secret-key-change-in-production"

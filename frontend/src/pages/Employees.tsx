@@ -177,6 +177,28 @@ const extractStringField = (
   return undefined;
 };
 
+const toDateString = (value: unknown) => {
+  if (!value) return undefined;
+  if (typeof value === 'string') {
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) return formatDate(date);
+    return formatDate(value);
+  }
+  if (typeof value === 'object' && value !== null) {
+    const dateValue = (value as Record<string, unknown>)?.$date;
+    if (typeof dateValue === 'string') {
+      return formatDate(dateValue);
+    }
+    if (dateValue instanceof Date) {
+      return formatDate(dateValue);
+    }
+  }
+  if (value instanceof Date) {
+    return formatDate(value);
+  }
+  return undefined;
+};
+
 const formatDateRange = (start?: string, end?: string) => {
   const startLabel = formatDate(start);
   const endLabel = end ? formatDate(end) : 'Present';
@@ -203,6 +225,181 @@ const calculateDurationBetween = (start?: string, end?: string) => {
   const yearPart = years > 0 ? `${years} yr${years > 1 ? 's' : ''}` : '';
   const monthPart = months > 0 ? `${months} mo${months > 1 ? 's' : ''}` : '';
   return [yearPart, monthPart].filter(Boolean).join(' ') || 'Less than a month';
+};
+
+const NAME_KEYS = [
+  'Name',
+  'name',
+  'FullName',
+  'fullName',
+  'EmployeeName',
+  'employeeName',
+  'Employee_Name',
+  'employee_name',
+  'EmployeeFullName',
+  'employee_full_name',
+];
+
+const DEPARTMENT_KEYS = [
+  'Department',
+  'department',
+  'Dept',
+  'dept',
+  'DepartmentName',
+  'department_name',
+  'Division',
+  'division',
+];
+
+const POSITION_KEYS = [
+  'Position',
+  'position',
+  'Role',
+  'role',
+  'JobTitle',
+  'job_title',
+  'Title',
+  'title',
+  'Designation',
+  'designation',
+];
+
+const MANAGER_KEYS = [
+  'Manager',
+  'manager',
+  'ManagerName',
+  'managerName',
+  'Supervisor',
+  'supervisor',
+  'ReportingManager',
+  'reportingManager',
+];
+
+const EMAIL_KEYS = ['Email', 'email', 'EmailAddress', 'email_address', 'CorporateEmail', 'corporate_email'];
+const PHONE_KEYS = ['Phone', 'phone', 'PhoneNumber', 'phone_number', 'ContactNumber', 'contact_number'];
+const LOCATION_KEYS = ['Location', 'location', 'City', 'city', 'Office', 'office', 'OfficeLocation', 'office_location', 'WorkLocation', 'workLocation'];
+const TEAM_KEYS = ['Team', 'team', 'Squad', 'squad', 'Group', 'group', 'Department', 'department'];
+
+const getNestedValue = (
+  source: Record<string, unknown> | null | undefined,
+  path: string,
+): unknown => {
+  if (!source) return undefined;
+  return path.split('.').reduce<unknown>((value, segment) => {
+    if (value === undefined || value === null) return undefined;
+    if (typeof value !== 'object') return undefined;
+    const record = value as Record<string, unknown>;
+    return record[segment];
+  }, source);
+};
+
+const getEmployeeField = (
+  employee: Employee | DetailEmployee | Record<string, unknown> | null | undefined,
+  keys: string[],
+  fallback?: string,
+) => {
+  if (!employee) return fallback;
+
+  return extractStringField(employee as Record<string, unknown>, keys) ?? fallback;
+};
+
+const EXCLUDED_ATTRIBUTE_KEYS = new Set([
+  '_id',
+  '__v',
+  'Employee_ID',
+  'EmployeeID',
+  'employee_id',
+  'employeeId',
+  'id',
+  'Name',
+  'Department',
+  'Position',
+  'Email',
+  'Phone',
+  'Manager',
+  'ManagerName',
+  'EmploymentType',
+  'DateOfJoining',
+  'LastPromotionDate',
+  'LastPerformanceReviewDate',
+  'NextReviewDate',
+  'Salary',
+  'LeaveBalance',
+  'Benefits',
+  'Team',
+  'Location',
+  'City',
+  'Experience',
+  'ExperienceSummary',
+  'TotalWorkingYears',
+  'ExperienceYears',
+  'TotalExperienceYears',
+  'YearsOfExperience',
+  'YearsAtCompany',
+  'PerformanceRating',
+  'EmploymentHistory',
+  'CareerHistory',
+  'History',
+  'JobHistory',
+  'WorkHistory',
+  'Projects',
+  'Skills',
+  'PerformanceHistory',
+  'CreatedAt',
+  'UpdatedAt',
+  'contact',
+  'employment_overview',
+  'compensation',
+  'performance_insights',
+  'current_assignment',
+  'experience_years',
+  'service_tenure',
+  'onboarding_progress',
+  'attrition_risk',
+  'skills',
+  'employment_history',
+]);
+
+const humanizeKey = (key: string) => {
+  if (!key) return key;
+  return key
+    .replace(/_/g, ' ')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^\w/, (char) => char.toUpperCase());
+};
+
+const formatAttributeValue = (value: unknown): string => {
+  if (value === null || value === undefined) return '';
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (typeof item === 'object' ? JSON.stringify(item) : String(item)))
+      .join(', ');
+  }
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'Yes' : 'No';
+  }
+  return String(value);
+};
+
+const resolveEmployeeIdentifier = (employee: Employee | DetailEmployee | Record<string, unknown>): string | undefined => {
+  if (!employee) return undefined;
+  const candidate =
+    (employee as Employee).Employee_ID ||
+    (employee as any).EmployeeID ||
+    (employee as any).employee_id ||
+    (employee as any).ID ||
+    (employee as any).id ||
+    (employee as any)._id;
+  return typeof candidate === 'string' && candidate.trim().length > 0 ? candidate.trim() : undefined;
 };
 
 export const Employees = () => {
@@ -240,7 +437,7 @@ export const Employees = () => {
 
   const { data: employeesData, isLoading } = useQuery({
     queryKey: ['employees', search, page],
-    queryFn: () => employeeService.getAll({ search, page, limit: 20 }),
+    queryFn: () => employeeService.getAll({ search, page }),
   });
 
   const {
@@ -297,10 +494,178 @@ export const Employees = () => {
 
   const employees = employeesData?.data || [];
   const selectedEmployee = (selectedEmployeeData?.data || null) as DetailEmployee | null;
+  const selectedEmployeeName = useMemo(
+    () => getEmployeeField(selectedEmployee, NAME_KEYS, selectedEmployee?.Name),
+    [selectedEmployee],
+  );
+  const selectedEmployeeDepartment = useMemo(
+    () => getEmployeeField(selectedEmployee, DEPARTMENT_KEYS, selectedEmployee?.Department),
+    [selectedEmployee],
+  );
+  const selectedEmployeePosition = useMemo(
+    () => getEmployeeField(selectedEmployee, POSITION_KEYS, selectedEmployee?.Position),
+    [selectedEmployee],
+  );
+  const selectedEmployeeManager = useMemo(
+    () => getEmployeeField(selectedEmployee, MANAGER_KEYS, selectedEmployee?.Manager),
+    [selectedEmployee],
+  );
+  const selectedEmployeeEmail = useMemo(
+    () => getEmployeeField(selectedEmployee, EMAIL_KEYS, selectedEmployee?.Email),
+    [selectedEmployee],
+  );
+  const selectedEmployeePhone = useMemo(
+    () => getEmployeeField(selectedEmployee, PHONE_KEYS, selectedEmployee?.Phone),
+    [selectedEmployee],
+  );
+  const selectedEmployeeLocation = useMemo(
+    () => getEmployeeField(selectedEmployee, LOCATION_KEYS, selectedEmployee?.Location || selectedEmployee?.City),
+    [selectedEmployee],
+  );
+  const selectedEmployeeTeam = useMemo(
+    () => getEmployeeField(selectedEmployee, TEAM_KEYS, selectedEmployee?.Team || selectedEmployee?.Department),
+    [selectedEmployee],
+  );
+  const selectedEmployeeServiceTenure = useMemo(() => {
+    const text =
+      getEmployeeField(
+        selectedEmployee,
+        ['service_tenure', 'ServiceTenure', 'Tenure'],
+        selectedEmployee?.service_tenure as string | undefined,
+      ) ?? undefined;
+    if (text) return text;
+    return selectedEmployee?.DateOfJoining ? calculateServiceDuration(selectedEmployee.DateOfJoining) : undefined;
+  }, [selectedEmployee]);
+  const selectedEmployeeExperienceYears = useMemo(
+    () =>
+      getEmployeeField(
+        selectedEmployee,
+        ['experience_years', 'ExperienceYears', 'TotalExperienceYears', 'TotalWorkingYears'],
+        (selectedEmployee?.experience_years as string | undefined) ??
+          (selectedEmployee?.TotalWorkingYears as string | undefined),
+      ),
+    [selectedEmployee],
+  );
+  const formattedExperienceYears = useMemo(() => {
+    if (!selectedEmployeeExperienceYears) return undefined;
+    const numeric = Number(selectedEmployeeExperienceYears);
+    if (!Number.isNaN(numeric)) {
+      return `${numeric.toFixed(numeric % 1 === 0 ? 0 : 1)} yr${numeric === 1 ? '' : 's'}`;
+    }
+    return selectedEmployeeExperienceYears;
+  }, [selectedEmployeeExperienceYears]);
+  const selectedEmployeeOnboardingProgress = useMemo(
+    () =>
+      getEmployeeField(
+        selectedEmployee,
+        ['onboarding_progress', 'OnboardingProgress'],
+        selectedEmployee?.onboarding_progress as string | undefined,
+      ),
+    [selectedEmployee],
+  );
+  const selectedEmployeeAttritionRisk = useMemo(
+    () =>
+      getEmployeeField(
+        selectedEmployee,
+        ['attrition_risk', 'AttritionRisk'],
+        selectedEmployee?.attrition_risk as string | undefined,
+      ),
+    [selectedEmployee],
+  );
+  const contactEmail = useMemo(
+    () => (selectedEmployeeEmail ?? (getNestedValue(selectedEmployee, 'contact.email') as string | undefined)),
+    [selectedEmployee, selectedEmployeeEmail],
+  );
+  const contactPhone = useMemo(
+    () => (selectedEmployeePhone ?? (getNestedValue(selectedEmployee, 'contact.phone') as string | undefined)),
+    [selectedEmployee, selectedEmployeePhone],
+  );
+  const contactLocation = useMemo(
+    () =>
+      selectedEmployeeLocation ??
+      (getNestedValue(selectedEmployee, 'contact.location') as string | undefined) ??
+      (getNestedValue(selectedEmployee, 'contact.city') as string | undefined),
+    [selectedEmployee, selectedEmployeeLocation],
+  );
+  const employmentOverview = useMemo(() => {
+    if (!selectedEmployee) return null;
+    const overview = getNestedValue(selectedEmployee, 'employment_overview') as Record<string, unknown> | undefined;
+    if (!overview || typeof overview !== 'object') return null;
+    return {
+      employmentType:
+        getEmployeeField(overview, ['employment_type', 'EmploymentType']) || selectedEmployee.EmploymentType,
+      joined: toDateString(getNestedValue(overview, 'joined')) ?? formatDate(selectedEmployee.DateOfJoining),
+      lastPromotion:
+        toDateString(getNestedValue(overview, 'last_promotion')) ??
+        formatDate(selectedEmployee.LastPromotionDate),
+    };
+  }, [selectedEmployee]);
+
+  const compensationOverview = useMemo(() => {
+    if (!selectedEmployee) return null;
+    const compensation = getNestedValue(selectedEmployee, 'compensation') as Record<string, unknown> | undefined;
+    if (!compensation || typeof compensation !== 'object') return null;
+    return {
+      salary:
+        (typeof compensation.annual_salary === 'number' ? compensation.annual_salary : undefined) ??
+        selectedEmployee.Salary,
+      leaveBalance:
+        (typeof compensation.leave_balance === 'number' ? compensation.leave_balance : undefined) ??
+        selectedEmployee.LeaveBalance,
+      benefits:
+        getEmployeeField(compensation, ['benefits', 'Benefits']) ?? (selectedEmployee.Benefits as string | undefined),
+    };
+  }, [selectedEmployee]);
+
+  const performanceOverview = useMemo(() => {
+    if (!selectedEmployee) return null;
+    const insights = getNestedValue(selectedEmployee, 'performance_insights') as Record<string, unknown> | undefined;
+    if (!insights || typeof insights !== 'object') return null;
+    return {
+      score:
+        (typeof insights.performance_score_arima === 'number'
+          ? insights.performance_score_arima
+          : undefined) ?? (selectedEmployee.performance_rating as number | undefined),
+      lastReview:
+        toDateString(getNestedValue(insights, 'last_review')) ??
+        formatDate(selectedEmployee.LastPerformanceReviewDate),
+      nextReview:
+        toDateString(getNestedValue(insights, 'next_review')) ?? formatDate(selectedEmployee.NextReviewDate),
+    };
+  }, [selectedEmployee]);
+
+  const contactInfo = {
+    email: contactEmail,
+    phone: contactPhone,
+    location: contactLocation,
+  };
+
+  const selectedEmployeeDisplayId = useMemo(() => {
+    if (!selectedEmployee) return null;
+    return (
+      resolveEmployeeIdentifier(selectedEmployee as Employee) ||
+      selectedEmployee.Employee_ID ||
+      (selectedEmployee as any)._id ||
+      selectedEmployeeName ||
+      undefined
+    );
+  }, [selectedEmployee, selectedEmployeeName]);
+
+  const attritionRisk = attritionData?.data as
+    | { risk_score: number; risk_level: 'low' | 'medium' | 'high'; probability: number }
+    | undefined;
+
+  const fallbackAttritionRisk = useMemo(() => {
+    if (attritionRisk?.risk_level) return attritionRisk.risk_level;
+    if (selectedEmployeeAttritionRisk) return selectedEmployeeAttritionRisk.toString();
+    return null;
+  }, [attritionRisk, selectedEmployeeAttritionRisk]);
   const departmentSuggestions = useMemo(() => {
     const unique = new Set<string>();
     for (const emp of employees as Employee[]) {
-      const dept = (emp?.Department || (emp as any)?.department || '').toString().trim();
+      const dept =
+        getEmployeeField(emp, DEPARTMENT_KEYS, (emp as any)?.department || emp.Department)?.toString().trim() ||
+        '';
       if (dept) {
         unique.add(dept);
       }
@@ -371,9 +736,6 @@ export const Employees = () => {
       setRefreshingPrediction(false);
     }
   }, [selectedEmployeeId, queryClient]);
-  const attritionRisk = attritionData?.data as
-    | { risk_score: number; risk_level: 'low' | 'medium' | 'high'; probability: number }
-    | undefined;
   const isPanelOpen = !!selectedEmployeeId;
   const isPanelLoading = detailLoading || attritionLoading || performanceLoading || onboardingLoading || detailFetching;
 
@@ -432,6 +794,7 @@ export const Employees = () => {
   const employmentHistoryEntries = useMemo(() => {
     if (!selectedEmployee) return [] as Record<string, unknown>[];
     const potentialSources = [
+      selectedEmployee.employment_history,
       selectedEmployee.EmploymentHistory,
       selectedEmployee.CareerHistory,
       selectedEmployee.History,
@@ -451,11 +814,34 @@ export const Employees = () => {
   }, [selectedEmployee]);
 
   const hasEmploymentHistory = employmentHistoryEntries.length > 0;
+  const selectedEmployeeAvatarInitial =
+    (selectedEmployeeName || 'E').charAt(0)?.toUpperCase() || 'E';
+  const currentAssignment = selectedEmployee?.current_assignment as string | undefined;
 
-  const riskBadgeClasses = attritionRisk
-    ? attritionRisk.risk_level === 'high'
+  const additionalAttributes = useMemo(() => {
+    if (!selectedEmployee) return [] as Array<{ key: string; value: string }>;
+    return Object.entries(selectedEmployee)
+      .filter(([key, value]) => {
+        if (EXCLUDED_ATTRIBUTE_KEYS.has(key)) return false;
+        if (value === null || value === undefined) return false;
+        if (typeof value === 'string' && value.trim().length === 0) return false;
+        if (Array.isArray(value) && value.length === 0) return false;
+        if (typeof value === 'object' && !Array.isArray(value) && Object.keys(value ?? {}).length === 0)
+          return false;
+        return true;
+      })
+      .map(([key, value]) => ({
+        key: humanizeKey(key),
+        value: formatAttributeValue(value),
+      }))
+      .sort((a, b) => a.key.localeCompare(b.key));
+  }, [selectedEmployee]);
+
+  const normalizedRiskLevel = (fallbackAttritionRisk || '').toLowerCase();
+  const riskBadgeClasses = fallbackAttritionRisk
+    ? normalizedRiskLevel === 'high'
       ? 'bg-red-500/10 text-red-300 border border-red-500/20'
-      : attritionRisk.risk_level === 'medium'
+      : normalizedRiskLevel === 'medium'
         ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
         : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
     : 'bg-gray-100 text-black border border-gray-200';
@@ -467,8 +853,8 @@ export const Employees = () => {
     if (selectedEmployee.DateOfJoining) {
       events.push({
         title: 'Joined the company',
-        description: `Started as ${selectedEmployee.Position || 'team member'} in ${
-          selectedEmployee.Department || 'the organisation'
+        description: `Started as ${selectedEmployeePosition || 'team member'} in ${
+          selectedEmployeeDepartment || 'the organisation'
         }.`,
         date: formatDate(selectedEmployee.DateOfJoining),
         status: 'completed',
@@ -488,20 +874,22 @@ export const Employees = () => {
 
     events.push({
       title: 'Current assignment',
-      description: `Working as ${selectedEmployee.Position || 'N/A'} in ${
-        selectedEmployee.Department || 'N/A'
+      description: `Working as ${selectedEmployeePosition || 'N/A'} in ${
+        selectedEmployeeDepartment || 'N/A'
       }.`,
       date: formatDate(selectedEmployee.LastRoleChangeDate || selectedEmployee.DateOfJoining),
       status: 'current',
       icon: Briefcase,
     });
 
-    if (attritionRisk) {
+    if (attritionRisk || fallbackAttritionRisk) {
       events.push({
         title: 'Attrition risk assessment',
-        description: `Current risk score is ${attritionRisk.risk_score}% (${attritionRisk.risk_level.toUpperCase()}).`,
+        description: attritionRisk
+          ? `Current risk score is ${attritionRisk.risk_score}% (${attritionRisk.risk_level.toUpperCase()}).`
+          : `Current risk level is ${fallbackAttritionRisk}.`,
         date: formatDate(new Date()),
-        status: attritionRisk.risk_level === 'high' ? 'upcoming' : 'current',
+        status: (attritionRisk?.risk_level || normalizedRiskLevel) === 'high' ? 'upcoming' : 'current',
         icon: ShieldCheck,
       });
     }
@@ -563,19 +951,18 @@ export const Employees = () => {
         ? [
             {
               title: 'Service tenure',
-              value: calculateServiceDuration(selectedEmployee.DateOfJoining),
+              value: selectedEmployeeServiceTenure ?? calculateServiceDuration(selectedEmployee.DateOfJoining),
               description: 'Time since hire',
               accent: 'from-purple-500/20 to-fuchsia-500/20',
               icon: Clock,
             },
             {
               title: 'Total experience',
-              value:
-                experienceYears !== undefined
-                  ? `${experienceYears} yr${experienceYears === 1 ? '' : 's'}`
-                  : selectedEmployee.Experience ||
-                    selectedEmployee.ExperienceSummary ||
-                    'Experience not recorded',
+              value: formattedExperienceYears
+                ? formattedExperienceYears
+                : selectedEmployee.Experience ||
+                  selectedEmployee.ExperienceSummary ||
+                  'Experience not recorded',
               description: 'Overall professional tenure',
               accent: 'from-indigo-500/20 to-blue-500/20',
               icon: Briefcase,
@@ -593,8 +980,10 @@ export const Employees = () => {
             {
               title: 'Onboarding progress',
               value:
-                taskProgress.total > 0
-                  ? `${taskProgress.completed}/${taskProgress.total} • ${taskProgress.completionPercentage}%`
+                selectedEmployeeOnboardingProgress
+                  ? selectedEmployeeOnboardingProgress
+                  : taskProgress.total > 0
+                    ? `${taskProgress.completed}/${taskProgress.total} • ${taskProgress.completionPercentage}%`
                   : onboardingError
                     ? 'No onboarding data'
                     : 'Planning...',
@@ -606,9 +995,11 @@ export const Employees = () => {
               title: 'Attrition risk',
               value: attritionRisk
                 ? `${attritionRisk.risk_score}% • ${attritionRisk.risk_level.toUpperCase()}`
-                : attritionError
-                  ? 'Model unavailable'
-                  : 'Evaluating...',
+                : fallbackAttritionRisk
+                  ? fallbackAttritionRisk
+                  : attritionError
+                    ? 'Model unavailable'
+                    : 'Evaluating...',
               description: 'Machine learning risk signal',
               accent:
                 attritionRisk?.risk_level === 'high'
@@ -645,19 +1036,6 @@ export const Employees = () => {
   const closePanel = useCallback(() => {
     setSelectedEmployeeId(null);
   }, [setSelectedEmployeeId]);
-
-  const resolveEmployeeIdentifier = useCallback((employee: Employee): string | undefined => {
-    const candidate =
-      employee.Employee_ID ||
-      (employee as any).EmployeeID ||
-      (employee as any).employee_id ||
-      (employee as any).ID ||
-      (employee as any).id ||
-      employee._id;
-    return typeof candidate === 'string' && candidate.trim().length > 0
-      ? candidate.trim()
-      : undefined;
-  }, []);
 
   return (
     <div className="p-6 space-y-6 bg-white min-h-screen">
@@ -886,10 +1264,14 @@ export const Employees = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {employees.map((emp: Employee) => {
                 const employeeIdentifier = resolveEmployeeIdentifier(emp);
-                const displayId = employeeIdentifier || 'N/A';
+                const displayId = employeeIdentifier || '';
+                const employeeName = getEmployeeField(emp, NAME_KEYS, emp.Name) || 'Unknown';
+                const employeePosition = getEmployeeField(emp, POSITION_KEYS, emp.Position)?.trim() || '';
+                const employeeDepartment = getEmployeeField(emp, DEPARTMENT_KEYS, emp.Department)?.trim() || '';
+                const avatarInitial = employeeName.charAt(0)?.toUpperCase() || 'E';
                 return (
                   <Card
-                    key={employeeIdentifier || emp.Employee_ID || emp._id || emp.Name}
+                    key={employeeIdentifier || emp.Employee_ID || emp._id || employeeName}
                   role="button"
                   tabIndex={0}
                     onClick={() => employeeIdentifier && handleSelectEmployee(employeeIdentifier)}
@@ -905,7 +1287,7 @@ export const Employees = () => {
                   <CardContent className="p-6">
                     <div className="flex flex-col items-center text-center space-y-3">
                       <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                        {emp.Name?.charAt(0)?.toUpperCase() || 'E'}
+                        {avatarInitial}
                       </div>
                       <div>
                         <button
@@ -919,14 +1301,16 @@ export const Employees = () => {
                           }}
                           className="font-semibold text-lg text-gray-900 focus:outline-none rounded-md px-1 py-0.5"
                         >
-                          {emp.Name || 'Unknown'}
+                          {employeeName}
                         </button>
-                        <p className="text-sm text-gray-600">{emp.Position || 'N/A'}</p>
+                        {employeePosition && <p className="text-sm text-gray-600">{employeePosition}</p>}
                       </div>
-                      <Badge className="bg-blue-50 text-blue-700 border-blue-200">
-                        {emp.Department || 'N/A'}
-                      </Badge>
-                      <div className="text-xs text-gray-500">ID: {displayId}</div>
+                      {employeeDepartment && (
+                        <Badge className="bg-blue-50 text-blue-700 border-blue-200">
+                          {employeeDepartment}
+                        </Badge>
+                      )}
+                      {displayId && <div className="text-xs text-gray-500">ID: {displayId}</div>}
                       {emp.Salary && (
                         <div className="text-sm font-medium text-blue-600">
                           {formatCurrency(emp.Salary)}
@@ -1016,24 +1400,24 @@ export const Employees = () => {
                       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                         <div className="flex items-start gap-4">
                           <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-600 to-violet-600 flex items-center justify-center text-2xl font-semibold shadow-lg shadow-purple-500/30">
-                            {selectedEmployee.Name?.charAt(0) || 'E'}
+                            {selectedEmployeeAvatarInitial}
                           </div>
                           <div>
                             <div className="flex items-center gap-3 flex-wrap">
                               <h3 className="text-2xl font-semibold text-white">
-                                {selectedEmployee.Name}
+                                {selectedEmployeeName || 'Employee'}
                               </h3>
                               <Badge className="bg-purple-500/20 text-purple-200 border border-purple-500/30">
-                                #{selectedEmployee.Employee_ID}
+                                #{selectedEmployeeDisplayId || '—'}
                               </Badge>
                             </div>
                             <p className="text-slate-300 mt-1">
-                              {selectedEmployee.Position || 'Role TBD'} ·{' '}
-                              {selectedEmployee.Department || 'Department TBD'}
+                              {selectedEmployeePosition || 'Role TBD'} ·{' '}
+                              {selectedEmployeeDepartment || 'Department TBD'}
                             </p>
-                            {selectedEmployee.Manager && (
+                            {selectedEmployeeManager && (
                               <p className="text-sm text-slate-400 mt-2">
-                                Reporting to {selectedEmployee.Manager}
+                                Reporting to {selectedEmployeeManager}
                               </p>
                             )}
                           </div>
@@ -1046,21 +1430,25 @@ export const Employees = () => {
                             Attrition risk:{' '}
                             {attritionRisk
                               ? `${attritionRisk.risk_level.toUpperCase()} (${attritionRisk.risk_score}%)`
-                              : attritionError
-                                ? 'Unavailable'
-                                : 'Evaluating'}
+                              : fallbackAttritionRisk
+                                ? fallbackAttritionRisk
+                                : attritionError
+                                  ? 'Unavailable'
+                                  : 'Evaluating'}
                           </div>
                           <div className="text-slate-400">
-                            Joined {formatDate(selectedEmployee.DateOfJoining) || '—'} ·{' '}
-                            {selectedEmployee.EmploymentType || 'Employment type pending'}
+                            Joined {employmentOverview?.joined || formatDate(selectedEmployee.DateOfJoining) || '—'} ·{' '}
+                            {employmentOverview?.employmentType || selectedEmployee.EmploymentType || 'Employment type pending'}
                           </div>
                           <div className="text-slate-400">
                             Experience:{' '}
-                            {experienceYears !== undefined
-                              ? `${experienceYears} year${experienceYears === 1 ? '' : 's'} total`
-                              : selectedEmployee.YearsAtCompany
-                                ? `${selectedEmployee.YearsAtCompany} yrs at company`
-                                : 'Not recorded'}
+                            {formattedExperienceYears
+                              ? `${formattedExperienceYears} total`
+                              : experienceYears !== undefined
+                                ? `${experienceYears} year${experienceYears === 1 ? '' : 's'} total`
+                                : selectedEmployee.YearsAtCompany
+                                  ? `${selectedEmployee.YearsAtCompany} yrs at company`
+                                  : 'Not recorded'}
                           </div>
                           {onboardingRecord && (
                             <div className="flex flex-col gap-1 text-slate-400">
@@ -1068,7 +1456,7 @@ export const Employees = () => {
                                 <ClipboardCheck className="w-3.5 h-3.5 text-purple-300" />
                                 Onboarding status:{' '}
                                 <span className="uppercase text-xs tracking-wider text-purple-200">
-                                  {onboardingRecord.status || 'Active'}
+                                  {selectedEmployeeOnboardingProgress || onboardingRecord.status || 'Active'}
                                 </span>
                               </span>
                               {taskProgress.total > 0 && (
@@ -1109,17 +1497,17 @@ export const Employees = () => {
                           <CardTitle className="text-lg text-gray-900">Contact & identity</CardTitle>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 gap-4 text-sm text-gray-700 sm:grid-cols-2">
-                          <InfoRow icon={Mail} label="Email" value={selectedEmployee.Email} />
-                          <InfoRow icon={Phone} label="Phone" value={selectedEmployee.Phone} />
+                          <InfoRow icon={Mail} label="Email" value={contactInfo.email} />
+                          <InfoRow icon={Phone} label="Phone" value={contactInfo.phone} />
                           <InfoRow
                             icon={MapPin}
                             label="Location"
-                            value={selectedEmployee.Location || selectedEmployee.City}
+                            value={contactInfo.location}
                           />
                           <InfoRow
                             icon={Building2}
                             label="Team"
-                            value={selectedEmployee.Team || selectedEmployee.Department}
+                            value={selectedEmployeeTeam}
                           />
                         </CardContent>
                       </Card>
@@ -1132,22 +1520,22 @@ export const Employees = () => {
                           <InfoRow
                             icon={Briefcase}
                             label="Role"
-                            value={selectedEmployee.Position}
+                            value={selectedEmployeePosition}
                           />
                           <InfoRow
                             icon={CalendarDays}
                             label="Joined"
-                            value={formatDate(selectedEmployee.DateOfJoining) || '—'}
+                            value={employmentOverview?.joined || formatDate(selectedEmployee.DateOfJoining) || '—'}
                           />
                           <InfoRow
                             icon={TrendingUp}
                             label="Last promotion"
-                            value={formatDate(selectedEmployee.LastPromotionDate) || '—'}
+                            value={employmentOverview?.lastPromotion || formatDate(selectedEmployee.LastPromotionDate) || '—'}
                           />
                           <InfoRow
                             icon={BadgeCheck}
                             label="Employment type"
-                            value={selectedEmployee.EmploymentType || 'Full-time'}
+                            value={employmentOverview?.employmentType || selectedEmployee.EmploymentType || 'Full-time'}
                           />
                         </CardContent>
                       </Card>
@@ -1165,22 +1553,30 @@ export const Employees = () => {
                           <div className="flex items-center justify-between rounded-lg border border-slate-700/70 bg-slate-900/40 px-4 py-3">
                             <span>Annual salary</span>
                             <span className="font-medium text-emerald-300">
-                              {formatCurrency(selectedEmployee.Salary)}
+                              {formatCurrency(
+                                (compensationOverview?.salary as number | undefined) ?? selectedEmployee.Salary,
+                              )}
                             </span>
                           </div>
                           <InfoRow
                             icon={Activity}
                             label="Leave balance"
                             value={
-                              selectedEmployee.LeaveBalance !== undefined
-                                ? `${selectedEmployee.LeaveBalance} days`
+                              compensationOverview?.leaveBalance !== undefined
+                                ? `${compensationOverview.leaveBalance} days`
+                                : selectedEmployee.LeaveBalance !== undefined
+                                  ? `${selectedEmployee.LeaveBalance} days`
                                 : 'Not recorded'
                             }
                           />
                           <InfoRow
                             icon={ShieldCheck}
                             label="Benefits"
-                            value={selectedEmployee.Benefits || 'Standard benefits package'}
+                            value={
+                              compensationOverview?.benefits ||
+                              selectedEmployee.Benefits ||
+                              'Standard benefits package'
+                            }
                           />
                         </CardContent>
                       </Card>
@@ -1237,6 +1633,16 @@ export const Employees = () => {
                                           : performancePrediction.trend === 'decreasing'
                                             ? '↓ Declining'
                                             : '→ Stable'}
+                                      </Badge>
+                                    </div>
+                                  ) : performanceOverview?.score !== undefined ? (
+                                    <div className="flex items-baseline gap-2">
+                                      <span className="text-2xl font-bold text-white">
+                                        {Number(performanceOverview.score).toFixed(1)}
+                                      </span>
+                                      <span className="text-sm text-slate-400">/ 5</span>
+                                      <Badge className="ml-2 bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+                                        Manual score
                                       </Badge>
                                     </div>
                                   ) : performanceLoading ? (
@@ -1316,6 +1722,12 @@ export const Employees = () => {
                               Last updated {formatDate(performanceGeneratedAt) || performanceGeneratedAt}
                             </p>
                           )}
+                          {!performancePrediction && performanceOverview && (
+                            <p className="text-xs text-slate-500">
+                              Manual review data last updated{' '}
+                              {performanceOverview.lastReview || 'Not recorded'}
+                            </p>
+                          )}
 
                           {/* Attrition Risk - Prominent Display */}
                           <div className="rounded-lg border border-slate-600/50 bg-gradient-to-br from-slate-800/60 to-slate-900/60 p-4">
@@ -1363,6 +1775,23 @@ export const Employees = () => {
                                         }`}
                                       >
                                         {attritionRisk.risk_level.toUpperCase()} RISK
+                                      </Badge>
+                                    </div>
+                                  ) : fallbackAttritionRisk ? (
+                                    <div className="flex items-baseline gap-2">
+                                      <span className="text-2xl font-bold text-white">
+                                        {fallbackAttritionRisk}
+                                      </span>
+                                      <Badge
+                                        className={`ml-2 ${
+                                          normalizedRiskLevel === 'high'
+                                            ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                                            : normalizedRiskLevel === 'medium'
+                                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                                              : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                                        }`}
+                                      >
+                                        Manual risk
                                       </Badge>
                                     </div>
                                   ) : attritionLoading ? (
@@ -1540,6 +1969,9 @@ export const Employees = () => {
                               'team',
                               'division',
                               'businessUnit',
+                              'company',
+                              'organization',
+                              'employer',
                             ]);
                             const start = extractStringField(entry, [
                               'start',
@@ -1575,6 +2007,9 @@ export const Employees = () => {
                             const achievementsList = Array.isArray(achievements)
                               ? (achievements as unknown[])
                               : null;
+                            const durationText =
+                              extractStringField(entry, ['duration', 'tenure', 'timeframe']) ||
+                              undefined;
 
                             return (
                               <div
@@ -1590,13 +2025,15 @@ export const Employees = () => {
                                       {role || 'Role information'}
                                     </p>
                                     <p className="text-xs text-slate-400">
-                                      {department || selectedEmployee.Department || 'Department'}
+                                      {department || selectedEmployeeDepartment || 'Department'}
                                     </p>
                                   </div>
                                 </div>
                                 <div className="flex-1 space-y-2 text-sm text-slate-300">
                                   <p className="text-xs text-slate-500">
-                                    {formatDateRange(start, end)} • {calculateDurationBetween(start, end)}
+                                    {start || end
+                                      ? `${formatDateRange(start, end)} • ${calculateDurationBetween(start, end)}`
+                                      : durationText || 'Duration not recorded'}
                                   </p>
                                   {responsibilitiesText && (
                                     <p className="text-sm text-slate-300">{responsibilitiesText}</p>
@@ -1632,6 +2069,12 @@ export const Employees = () => {
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                          {currentAssignment && (
+                            <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+                              <p className="text-xs uppercase tracking-wider text-indigo-700">Current assignment</p>
+                              <p className="mt-2 text-sm text-indigo-900">{currentAssignment}</p>
+                            </div>
+                          )}
                           {skills && skills.length > 0 && (
                             <div>
                               <p className="text-xs uppercase tracking-wider text-slate-500">
@@ -1738,6 +2181,28 @@ export const Employees = () => {
                         )}
                       </CardContent>
                     </Card>
+
+                    {/* Additional attributes */}
+                    {additionalAttributes.length > 0 && (
+                      <Card className="border-gray-200 bg-white">
+                        <CardHeader>
+                          <CardTitle className="text-lg text-gray-900">Additional employee data</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            {additionalAttributes.map((attr) => (
+                              <div
+                                key={attr.key}
+                                className="rounded-lg border border-gray-200 bg-gray-50 p-3"
+                              >
+                                <p className="text-xs uppercase tracking-wider text-gray-500">{attr.key}</p>
+                                <p className="text-sm text-gray-800 break-words">{attr.value || 'Not provided'}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
                 )}
               </div>

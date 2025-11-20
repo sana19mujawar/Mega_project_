@@ -3,16 +3,31 @@ from typing import Optional, Any, Dict, List
 from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
 import random
+import base64
+import ast
+import re
 from app.core.database import get_database
 from bson import ObjectId
+from bson.binary import Binary
 
 router = APIRouter()
 
 def serialize_document(doc):
     """Convert MongoDB document to JSON-serializable format"""
     if doc and "_id" in doc:
-        doc["_id"] = str(doc["_id"])
+        value = doc["_id"]
+        if isinstance(value, ObjectId):
+            doc["_id"] = str(value)
+        elif isinstance(value, Binary):
+            encoded = base64.urlsafe_b64encode(bytes(value)).decode('ascii')
+            doc["_id"] = f"bin{value.subtype}:{encoded}"
+        elif isinstance(value, (bytes, bytearray)):
+            encoded = base64.urlsafe_b64encode(bytes(value)).decode('ascii')
+            doc["_id"] = f"bin:{encoded}"
+        else:
+            doc["_id"] = str(value)
     return doc
+
 
 class EmployeeCreate(BaseModel):
     name: str = Field(..., min_length=1, description="Full name of the employee")
@@ -50,6 +65,32 @@ def generate_employee_id() -> str:
     timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     suffix = random.randint(100, 999)
     return f"EMP-{timestamp}-{suffix}"
+
+_BINARY_ID_PATTERN = re.compile(r"^bin(?:(\d+))?:(.+)$")
+
+
+def _decode_binary_identifier(identifier: str) -> Optional[Binary | bytes]:
+    if not identifier:
+        return None
+    match = _BINARY_ID_PATTERN.match(identifier)
+    if match:
+        subtype_raw, payload = match.groups()
+        padding = '=' * (-len(payload) % 4)
+        try:
+            decoded = base64.urlsafe_b64decode(payload + padding)
+        except Exception:
+            return None
+        if subtype_raw is not None:
+            return Binary(decoded, int(subtype_raw))
+        return decoded
+    if identifier.startswith("b'") or identifier.startswith('b"'):
+        try:
+            value = ast.literal_eval(identifier)
+            if isinstance(value, bytes):
+                return value
+        except (ValueError, SyntaxError):
+            return None
+    return None
 
 
 def map_employee_to_document(payload: EmployeeCreate) -> Dict[str, Any]:
@@ -98,7 +139,7 @@ async def get_employees(
     search: Optional[str] = Query(None),
     department: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100)
+    limit: int = Query(0, ge=0, le=1000)
 ):
     """Get all employees with optional filtering"""
     db = get_database()
@@ -115,12 +156,16 @@ async def get_employees(
     if department:
         query["Department"] = department
     
-    # Pagination
-    skip = (page - 1) * limit
-    
-    # Fetch data
-    cursor = collection.find(query).skip(skip).limit(limit)
-    employees = await cursor.to_list(length=limit)
+    # Pagination / fetch strategy
+    skip = (page - 1) * limit if limit > 0 else 0
+    cursor = collection.find(query)
+    if skip:
+        cursor = cursor.skip(skip)
+    if limit > 0:
+        cursor = cursor.limit(limit)
+        employees = await cursor.to_list(length=limit)
+    else:
+        employees = [emp async for emp in cursor]
     total = await collection.count_documents(query)
     
     # Serialize
@@ -131,10 +176,10 @@ async def get_employees(
         "success": True,
         "data": employees,
         "pagination": {
-            "page": page,
+            "page": page if limit > 0 else 1,
             "limit": limit,
             "total": total,
-            "pages": (total + limit - 1) // limit
+            "pages": (total + limit - 1) // limit if limit > 0 and total else 1
         }
     }
 
@@ -244,6 +289,13 @@ async def get_employee(employee_id: str):
             employee = await collection.find_one({"_id": object_id})
         except Exception:
             employee = None
+
+    if not employee:
+        binary_value = _decode_binary_identifier(lookup_id)
+        if isinstance(binary_value, Binary):
+            employee = await collection.find_one({"_id": binary_value})
+        elif isinstance(binary_value, (bytes, bytearray)):
+            employee = await collection.find_one({"_id": binary_value})
 
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
