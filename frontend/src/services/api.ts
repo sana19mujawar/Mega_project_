@@ -326,3 +326,72 @@ export const interviewCoordinatorService = {
   },
 };
 
+// Policy Workflows service
+export const policyWorkflowsService = {
+  createCampaign: async (payload: { name: string; policies: string[]; employee_ids?: string[]; due_date?: string }) => {
+    const response = await api.post('/agents/policy-workflows/campaign', payload);
+    return response.data;
+  },
+  listCampaigns: async (status?: string) => {
+    const params = status ? { status } : {};
+    const response = await api.get('/agents/policy-workflows/campaigns', { params });
+    return response.data;
+  },
+  acknowledge: async (payload: { campaign_id: string; employee_id: string; policy_name: string }) => {
+    const response = await api.post('/agents/policy-workflows/acknowledge', payload);
+    return response.data;
+  },
+  getCampaignStatus: async (campaignId: string) => {
+    const response = await api.get('/agents/policy-workflows/status', { params: { campaign_id: campaignId } });
+    return response.data;
+  },
+};
+
+// Probation service
+export const probationService = {
+  list: async () => {
+    const response = await api.get('/agents/probation/list');
+    return response.data;
+  },
+  confirm: async (employeeId: string) => {
+    const response = await api.post('/agents/probation/confirm', null, { params: { employee_id: employeeId } });
+    return response.data;
+  },
+};
+
+// Interventions service
+export const interventionsService = {
+  getPlaybooks: async () => {
+    const response = await api.get('/agents/interventions/playbooks');
+    return response.data;
+  },
+  getHighRisk: async () => {
+    const response = await api.get('/agents/interventions/high-risk');
+    return response.data;
+  },
+  apply: async (payload: { employee_id: string; intervention_type: string; notes?: string }) => {
+    const response = await api.post('/agents/interventions/apply', payload);
+    return response.data;
+  },
+};
+
+// Controlled Actions service
+export const actionRequestsService = {
+  create: async (payload: { action_type: string; employee_id: string; payload?: Record<string, unknown>; requested_by?: string }) => {
+    const response = await api.post('/agents/actions/request', payload);
+    return response.data;
+  },
+  listPending: async () => {
+    const response = await api.get('/agents/actions/pending');
+    return response.data;
+  },
+  approve: async (requestId: string, approvedBy?: string) => {
+    const response = await api.post(`/agents/actions/${requestId}/approve`, null, { params: { approved_by: approvedBy } });
+    return response.data;
+  },
+  reject: async (requestId: string, reason?: string) => {
+    const response = await api.post(`/agents/actions/${requestId}/reject`, null, { params: { reason } });
+    return response.data;
+  },
+};
+

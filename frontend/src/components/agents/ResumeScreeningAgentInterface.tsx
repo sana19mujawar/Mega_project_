@@ -94,7 +94,7 @@ export const ResumeScreeningAgentInterface = () => {
         // For PDFs, we'll need to extract text. For now, show a message.
         // In a production app, you'd use a PDF parsing library like pdf-parse
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = () => {
           // PDFs are binary, so we can't directly read them as text
           // This is a placeholder - in production, use a PDF library
           setResumeText('PDF file uploaded. Please extract text manually or use a PDF parser.');
