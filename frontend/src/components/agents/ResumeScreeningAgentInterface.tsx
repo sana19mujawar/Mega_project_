@@ -10,25 +10,25 @@ const WORKFLOW_STEPS = [
     id: 'parse_resume',
     name: 'Parse Resume',
     description: 'Extract structured information from resume text',
-    api: 'POST /api/v1/agents/resume-screening',
+    api: '',
   },
   {
     id: 'score_candidate',
     name: 'Score Candidate',
     description: 'Score candidate against job requirements (0-100)',
-    api: 'POST /api/v1/agents/resume-screening',
+    api: '',
   },
   {
     id: 'save_result',
     name: 'Save Result',
     description: 'Store screening result in database',
-    api: 'Automatic after screening',
+    api: '',
   },
   {
     id: 'notify',
     name: 'Notify & Auto-Advance',
     description: 'Auto-advance high scores or notify HR for review',
-    api: 'Email Service Integration',
+    api: '',
   },
 ];
 
@@ -186,9 +186,11 @@ export const ResumeScreeningAgentInterface = () => {
                     <Badge variant="secondary">Step {index + 1}</Badge>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">{step.description}</p>
-                  <div className="bg-gray-100 rounded px-2 py-1 text-xs font-mono text-gray-900">
-                    {step.api}
-                  </div>
+                  {step.api ? (
+                    <div className="bg-gray-100 rounded px-2 py-1 text-xs font-mono text-gray-900">
+                      {step.api}
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>

@@ -81,29 +81,29 @@ const DOCUMENT_TYPES: DocumentMeta[] = [
     id: 'offer_letter',
     name: 'Offer Letter',
     description: 'Generate personalized employment offer letters with compensation summary.',
-    api: 'POST /api/v1/agents/documents/offer-letter',
-    gradient: 'from-blue-600 to-indigo-600',
+    api: '',
+    gradient: 'from-blue-500 to-cyan-500',
   },
   {
     id: 'employment_contract',
     name: 'Employment Contract',
     description: 'Draft legally compliant employment contracts with role-specific clauses.',
-    api: 'POST /api/v1/agents/documents/contract',
-    gradient: 'from-purple-600 to-fuchsia-600',
+    api: '',
+    gradient: 'from-blue-500 to-cyan-500',
   },
   {
     id: 'experience_certificate',
     name: 'Experience Certificate',
     description: 'Summarize tenure, responsibilities, and performance for outgoing employees.',
-    api: 'POST /api/v1/agents/documents/experience-certificate',
-    gradient: 'from-emerald-600 to-teal-600',
+    api: '',
+    gradient: 'from-blue-500 to-cyan-500',
   },
   {
     id: 'salary_certificate',
     name: 'Salary Certificate',
     description: 'Confirm compensation details for employee verification requests.',
-    api: 'POST /api/v1/agents/documents/salary-certificate',
-    gradient: 'from-amber-500 to-orange-500',
+    api: '',
+    gradient: 'from-blue-500 to-cyan-500',
   },
 ];
 
@@ -362,7 +362,7 @@ export const DocumentGenerationAgentInterface = () => {
       onChange={(event) => onChange(event.target.value)}
       placeholder={placeholder}
       rows={4}
-      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-black placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
   );
 
@@ -675,14 +675,14 @@ export const DocumentGenerationAgentInterface = () => {
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3 mb-2">
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-500 p-3 rounded-lg shadow-lg shadow-indigo-500/20">
+          <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-3 rounded-lg shadow-lg shadow-blue-500/20">
             <FileCheck className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               Document Generation Agent
             </h2>
-            <p className="text-slate-400 mt-1">
+            <p className="text-slate-600 mt-1">
               Automate employment letters, contracts, and certificates with AI assistance.
             </p>
           </div>
@@ -693,33 +693,41 @@ export const DocumentGenerationAgentInterface = () => {
         <Card className="border border-gray-200 bg-white">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-gray-900">
-              <FileText className="w-5 h-5 text-indigo-600" />
+              <FileText className="w-5 h-5 text-blue-500" />
               Document templates
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {DOCUMENT_TYPES.map((doc) => (
                 <button
                   key={doc.id}
                   type="button"
                   onClick={() => setSelectedType(doc.id)}
-                  className={`group rounded-xl border p-4 text-left transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  className={`group rounded-xl border-2 p-5 text-left transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     selectedType === doc.id
-                      ? 'border-indigo-400/60 bg-indigo-500/10 shadow-lg shadow-indigo-500/30'
-                      : 'border-slate-800 hover:border-indigo-500/40 hover:bg-slate-900/70'
+                      ? 'border-blue-500 bg-blue-50 shadow-sm'
+                      : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-md'
                   }`}
                 >
                   <div
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium text-white/80 ${
-                      selectedType === doc.id ? 'border-indigo-400/80 bg-indigo-500/30' : 'border-slate-700'
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${
+                      selectedType === doc.id
+                        ? 'border-blue-300 bg-blue-100 text-blue-800'
+                        : 'border-slate-200 bg-slate-100 text-slate-700 group-hover:border-blue-200 group-hover:bg-blue-50 group-hover:text-blue-800'
                     }`}
                   >
                     <span className={`h-2 w-2 rounded-full bg-gradient-to-br ${doc.gradient}`}></span>
                     {doc.name}
                   </div>
-                  <p className="mt-3 text-sm text-slate-300">{doc.description}</p>
-                  <p className="mt-3 text-[11px] font-mono text-slate-500">{doc.api}</p>
+                  <p className={`mt-3 text-sm leading-relaxed transition-colors duration-200 ${
+                    selectedType === doc.id ? 'text-slate-600' : 'text-slate-500 group-hover:text-slate-700'
+                  }`}>
+                    {doc.description}
+                  </p>
+                  {doc.api ? (
+                    <p className="mt-2 text-[11px] font-mono text-slate-500">{doc.api}</p>
+                  ) : null}
                 </button>
               ))}
             </div>
@@ -762,7 +770,7 @@ export const DocumentGenerationAgentInterface = () => {
                       ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
                       : generationState.tone === 'error'
                         ? 'border-red-500/40 bg-red-500/10 text-red-200'
-                        : 'border-indigo-500/30 bg-indigo-500/10 text-indigo-200'
+                        : 'border-blue-500/30 bg-blue-500/10 text-blue-800'
                   }`}
                 >
                   {generationState.message}
@@ -776,7 +784,7 @@ export const DocumentGenerationAgentInterface = () => {
           <Card className="border border-gray-200 bg-white">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-gray-900">
-                <Mail className="w-5 h-5 text-indigo-600" />
+                <Mail className="w-5 h-5 text-blue-600" />
                 Generated document
               </CardTitle>
             </CardHeader>
@@ -808,7 +816,7 @@ export const DocumentGenerationAgentInterface = () => {
           <Card className="border border-gray-200 bg-white">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-gray-900">
-                <History className="w-5 h-5 text-indigo-600" />
+                <History className="w-5 h-5 text-blue-600" />
                 Recent documents
               </CardTitle>
             </CardHeader>

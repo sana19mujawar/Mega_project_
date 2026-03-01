@@ -12,28 +12,28 @@ const WORKFLOW_STEPS = [
     id: 'create_workflow',
     name: 'Create Interview Workflow',
     description: 'Set up multi-round interview process',
-    api: 'POST /api/v1/agents/interview/create-workflow',
+    api: '',
     icon: Plus,
   },
   {
     id: 'send_reminder',
     name: 'Send Reminders',
     description: 'Automatically send interview reminders 24 hours before',
-    api: 'POST /api/v1/agents/interview/send-reminder',
+    api: '',
     icon: Mail,
   },
   {
     id: 'collect_feedback',
     name: 'Collect Feedback',
     description: 'Gather and analyze interview feedback',
-    api: 'POST /api/v1/agents/interview/collect-feedback',
+    api: '',
     icon: MessageSquare,
   },
   {
     id: 'schedule_next',
     name: 'Schedule Next Round',
     description: 'Automatically schedule next round based on feedback',
-    api: 'POST /api/v1/agents/interview/schedule-next',
+    api: '',
     icon: Calendar,
   },
 ];
@@ -184,11 +184,11 @@ export const InterviewCoordinatorAgentInterface = () => {
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex items-center gap-3 mb-2">
-          <div className="bg-gradient-to-br from-orange-500 to-red-500 p-3 rounded-lg">
+          <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-3 rounded-lg">
             <UserCheck className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               Interview Coordinator Agent
             </h2>
             <p className="text-slate-600 mt-1">Coordinates multi-round interviews, sends reminders, collects feedback</p>
@@ -200,7 +200,7 @@ export const InterviewCoordinatorAgentInterface = () => {
       <Card className="border-0 shadow-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-orange-500" />
+            <Calendar className="w-5 h-5 text-blue-500" />
             Workflow Steps
           </CardTitle>
         </CardHeader>
@@ -214,28 +214,38 @@ export const InterviewCoordinatorAgentInterface = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-all group ${
+                  className={`border-2 rounded-lg p-5 cursor-pointer transition-all duration-200 ease-out group ${
                     activeStep === step.id
-                      ? 'border-orange-500 bg-orange-50'
-                      : 'border-slate-200 hover:border-orange-300 hover:bg-slate-50'
+                      ? 'border-blue-500 bg-blue-50 shadow-sm'
+                      : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-md'
                   }`}
                   onClick={() => setActiveStep(activeStep === step.id ? null : step.id)}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="bg-orange-100 p-2 rounded-lg">
-                      <Icon className="w-5 h-5 text-orange-600" />
+                    <div className="bg-blue-100 p-2 rounded-lg shrink-0">
+                      <Icon className="w-5 h-5 text-blue-600" />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold text-sm text-white group-hover:text-black transition-colors">{step.name}</h4>
-                        <Badge variant="secondary" className="text-xs group-hover:text-black">
+                        <h4 className={`font-semibold text-sm transition-colors duration-200 ${
+                          activeStep === step.id ? 'text-slate-800' : 'text-slate-700 group-hover:text-slate-900'
+                        }`}>
+                          {step.name}
+                        </h4>
+                        <Badge variant="secondary" className="text-xs shrink-0">
                           {index + 1}
                         </Badge>
                       </div>
-                      <p className="text-xs text-white group-hover:text-black transition-colors">{step.description}</p>
-                      <div className="bg-slate-100 rounded px-2 py-1 text-xs font-mono text-black group-hover:text-black mt-2">
-                        {step.api}
-                      </div>
+                      <p className={`text-xs leading-relaxed transition-colors duration-200 ${
+                        activeStep === step.id ? 'text-slate-600' : 'text-slate-500 group-hover:text-slate-700'
+                      }`}>
+                        {step.description}
+                      </p>
+                      {step.api ? (
+                        <div className="mt-2 bg-slate-100 rounded px-2 py-1 text-xs font-mono text-slate-700">
+                          {step.api}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </motion.div>
@@ -247,10 +257,10 @@ export const InterviewCoordinatorAgentInterface = () => {
 
       {/* Step 1: Create Workflow */}
       {activeStep === 'create_workflow' && (
-        <Card className="border-0 shadow-md border-orange-200">
+        <Card className="border-0 shadow-md border-blue-200">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Plus className="w-5 h-5 text-orange-500" />
+              <Plus className="w-5 h-5 text-blue-500" />
               Step 1: Create Interview Workflow
             </CardTitle>
           </CardHeader>
@@ -295,7 +305,7 @@ export const InterviewCoordinatorAgentInterface = () => {
               <Button
                 onClick={handleCreateWorkflow}
                 disabled={loading || !candidateId || !jobId}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white"
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
               >
                 {loading ? 'Creating...' : 'Create Interview Workflow'}
               </Button>
@@ -314,10 +324,10 @@ export const InterviewCoordinatorAgentInterface = () => {
 
       {/* Step 2: Send Reminder */}
       {activeStep === 'send_reminder' && (
-        <Card className="border-0 shadow-md border-orange-200">
+        <Card className="border-0 shadow-md border-blue-200">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Mail className="w-5 h-5 text-orange-500" />
+              <Mail className="w-5 h-5 text-blue-500" />
               Step 2: Send Interview Reminder
             </CardTitle>
           </CardHeader>
@@ -331,7 +341,7 @@ export const InterviewCoordinatorAgentInterface = () => {
                   <button
                     type="button"
                     onClick={toggleInterviewList}
-                    className="text-xs text-orange-600 hover:text-orange-700 flex items-center gap-1"
+                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
                   >
                     <Search className="w-3 h-3" />
                     {showInterviewList ? 'Hide' : 'Show'} Available Interviews
@@ -353,7 +363,7 @@ export const InterviewCoordinatorAgentInterface = () => {
                           {interviewsData.data.map((interview: any) => (
                             <div
                               key={interview._id}
-                              className="text-xs p-2 bg-white rounded border border-slate-200 hover:bg-orange-50 cursor-pointer"
+                              className="text-xs p-2 bg-white rounded border border-slate-200 hover:bg-blue-50 cursor-pointer"
                               onClick={() => {
                                 setInterviewId(interview._id);
                                 setShowInterviewList(false);
@@ -389,7 +399,7 @@ export const InterviewCoordinatorAgentInterface = () => {
               <Button
                 onClick={handleSendReminder}
                 disabled={loading || !interviewId}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white"
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
               >
                 {loading ? 'Sending...' : 'Send Reminder Email'}
               </Button>
@@ -405,10 +415,10 @@ export const InterviewCoordinatorAgentInterface = () => {
 
       {/* Step 3: Collect Feedback */}
       {activeStep === 'collect_feedback' && (
-        <Card className="border-0 shadow-md border-orange-200">
+        <Card className="border-0 shadow-md border-blue-200">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-orange-500" />
+              <MessageSquare className="w-5 h-5 text-blue-500" />
               Step 3: Collect Interview Feedback
             </CardTitle>
           </CardHeader>
@@ -422,7 +432,7 @@ export const InterviewCoordinatorAgentInterface = () => {
                   <button
                     type="button"
                     onClick={toggleInterviewList}
-                    className="text-xs text-orange-600 hover:text-orange-700 flex items-center gap-1"
+                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
                   >
                     <Search className="w-3 h-3" />
                     {showInterviewList ? 'Hide' : 'Show'} Available Interviews
@@ -440,7 +450,7 @@ export const InterviewCoordinatorAgentInterface = () => {
                       {interviewsData.data?.map((interview: any) => (
                         <div
                           key={interview._id}
-                          className="text-xs p-2 bg-white rounded border border-slate-200 hover:bg-orange-50 cursor-pointer"
+                          className="text-xs p-2 bg-white rounded border border-slate-200 hover:bg-blue-50 cursor-pointer"
                           onClick={() => {
                             setFeedbackInterviewId(interview._id);
                             setShowInterviewList(false);
@@ -482,7 +492,7 @@ export const InterviewCoordinatorAgentInterface = () => {
               <Button
                 onClick={handleCollectFeedback}
                 disabled={loading || !feedbackInterviewId || !interviewer || !feedback}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white"
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
               >
                 {loading ? 'Processing...' : 'Submit Feedback'}
               </Button>
@@ -508,10 +518,10 @@ export const InterviewCoordinatorAgentInterface = () => {
 
       {/* Step 4: Schedule Next Round */}
       {activeStep === 'schedule_next' && (
-        <Card className="border-0 shadow-md border-orange-200">
+        <Card className="border-0 shadow-md border-blue-200">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-orange-500" />
+              <Calendar className="w-5 h-5 text-blue-500" />
               Step 4: Schedule Next Round
             </CardTitle>
           </CardHeader>
@@ -530,7 +540,7 @@ export const InterviewCoordinatorAgentInterface = () => {
               <Button
                 onClick={handleScheduleNext}
                 disabled={loading || !workflowId}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white"
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
               >
                 {loading ? 'Scheduling...' : 'Schedule Next Round'}
               </Button>
@@ -570,20 +580,20 @@ export const InterviewCoordinatorAgentInterface = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-              <Mail className="w-6 h-6 text-orange-600 mb-2" />
-              <h4 className="font-semibold mb-1">Email Integration</h4>
-              <p className="text-sm text-slate-600">Automated reminder emails and notifications</p>
+            <div className="bg-blue-50 rounded-lg p-5 border border-blue-200 hover:border-blue-300 hover:shadow-md transition-all duration-200">
+              <Mail className="w-6 h-6 text-blue-600 mb-2" />
+              <h4 className="font-semibold text-slate-800 mb-1">Email Integration</h4>
+              <p className="text-sm text-slate-600 leading-relaxed">Automated reminder emails and notifications</p>
             </div>
-            <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-              <MessageSquare className="w-6 h-6 text-orange-600 mb-2" />
-              <h4 className="font-semibold mb-1">Feedback Collection</h4>
-              <p className="text-sm text-slate-600">AI-powered feedback analysis and recommendations</p>
+            <div className="bg-blue-50 rounded-lg p-5 border border-blue-200 hover:border-blue-300 hover:shadow-md transition-all duration-200">
+              <MessageSquare className="w-6 h-6 text-blue-600 mb-2" />
+              <h4 className="font-semibold text-slate-800 mb-1">Feedback Collection</h4>
+              <p className="text-sm text-slate-600 leading-relaxed">AI-powered feedback analysis and recommendations</p>
             </div>
-            <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-              <Calendar className="w-6 h-6 text-orange-600 mb-2" />
-              <h4 className="font-semibold mb-1">Auto-Scheduling</h4>
-              <p className="text-sm text-slate-600">Automatic next round scheduling based on feedback</p>
+            <div className="bg-blue-50 rounded-lg p-5 border border-blue-200 hover:border-blue-300 hover:shadow-md transition-all duration-200">
+              <Calendar className="w-6 h-6 text-blue-600 mb-2" />
+              <h4 className="font-semibold text-slate-800 mb-1">Auto-Scheduling</h4>
+              <p className="text-sm text-slate-600 leading-relaxed">Automatic next round scheduling based on feedback</p>
             </div>
           </div>
         </CardContent>

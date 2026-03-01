@@ -238,25 +238,33 @@ export const OnboardingAgentInterface = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-all group ${
+                  className={`border-2 rounded-lg p-5 cursor-pointer transition-all duration-200 ease-out group ${
                     activeStep === step.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-slate-200 hover:border-blue-300 hover:bg-slate-50'
+                      ? 'border-blue-500 bg-blue-50 shadow-sm'
+                      : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-md'
                   }`}
                   onClick={() => setActiveStep(activeStep === step.id ? null : step.id)}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 p-2 rounded-lg">
+                    <div className="bg-blue-100 p-2 rounded-lg shrink-0">
                       <Icon className="w-5 h-5 text-blue-600" />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold text-sm text-white group-hover:text-black transition-colors">{step.name}</h4>
-                        <Badge variant="secondary" className="text-xs group-hover:text-black">
+                        <h4 className={`font-semibold text-sm transition-colors duration-200 ${
+                          activeStep === step.id ? 'text-slate-800' : 'text-slate-700 group-hover:text-slate-900'
+                        }`}>
+                          {step.name}
+                        </h4>
+                        <Badge variant="secondary" className="text-xs shrink-0">
                           {index + 1}
                         </Badge>
                       </div>
-                      <p className="text-xs text-white group-hover:text-black transition-colors">{step.description}</p>
+                      <p className={`text-xs leading-relaxed transition-colors duration-200 ${
+                        activeStep === step.id ? 'text-slate-600' : 'text-slate-500 group-hover:text-slate-700'
+                      }`}>
+                        {step.description}
+                      </p>
                     </div>
                   </div>
                 </motion.div>

@@ -113,12 +113,12 @@ const DEFAULT_EMPLOYEE_FORM: EmployeeFormState = {
 
 const InfoRow = ({ icon: Icon, label, value }: InfoRowProps) => (
   <div className="flex items-start gap-3">
-    <div className="rounded-md bg-gray-100 p-2">
-      <Icon className="w-4 h-4 text-purple-300" />
+    <div className="rounded-md bg-blue-50 p-2">
+      <Icon className="w-4 h-4 text-blue-600" />
     </div>
-    <div>
-      <p className="text-xs uppercase tracking-wider text-black">{label}</p>
-      <p className="text-sm text-black">{value || 'Not available'}</p>
+    <div className="min-w-0">
+      <p className="text-xs uppercase tracking-wider text-gray-500">{label}</p>
+      <p className="text-sm text-gray-900 break-words">{value || 'Not available'}</p>
     </div>
   </div>
 );
@@ -1282,7 +1282,7 @@ export const Employees = () => {
                         handleSelectEmployee(employeeIdentifier);
                       }
                     }}
-                  className="cursor-pointer border border-gray-200 bg-white focus:outline-none"
+                  className="cursor-pointer border border-gray-200 bg-white focus:outline-none hover:border-blue-300 hover:shadow-md transition-all duration-200"
                 >
                   <CardContent className="p-6">
                     <div className="flex flex-col items-center text-center space-y-3">
@@ -1359,29 +1359,29 @@ export const Employees = () => {
             onClick={closePanel}
           />
           <div
-            className="fixed inset-y-0 right-0 z-50 w-full max-w-4xl bg-white border-l border-gray-200"
+            className="fixed inset-y-0 right-0 z-50 w-full max-w-4xl bg-white border-l border-gray-200 shadow-xl"
           >
-              <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+              <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
                 <div>
-                  <p className="text-sm uppercase tracking-widest text-slate-500">
+                  <p className="text-sm uppercase tracking-widest text-gray-500">
                     Employee snapshot
                   </p>
-                  <h2 className="text-xl font-semibold text-white">
+                  <h2 className="text-xl font-semibold text-gray-900">
                     {selectedEmployee?.Name || 'Loading employee'}
                   </h2>
                 </div>
                 <button
                   onClick={closePanel}
-                  className="rounded-md border border-slate-700 bg-slate-800/60 p-2 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+                  className="rounded-md border border-gray-200 bg-gray-50 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="h-full overflow-y-auto px-6 py-6">
+              <div className="h-full overflow-y-auto px-6 py-6 bg-gray-50">
                 {isPanelLoading && (
-                  <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-4">
-                    <div className="h-12 w-12 animate-spin rounded-full border-2 border-slate-700 border-t-purple-500" />
+                  <div className="flex flex-col items-center justify-center py-16 text-gray-500 gap-4">
+                    <div className="h-12 w-12 animate-spin rounded-full border-2 border-gray-200 border-t-blue-500" />
                     <p>Loading employee record...</p>
                   </div>
                 )}
@@ -1396,27 +1396,27 @@ export const Employees = () => {
                 {!isPanelLoading && !detailError && selectedEmployee && (
                   <div className="space-y-6 pb-10">
                     {/* Hero */}
-                    <div className="rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-800/70 via-slate-900/80 to-slate-950/80 p-6 shadow-lg">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                         <div className="flex items-start gap-4">
-                          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-600 to-violet-600 flex items-center justify-center text-2xl font-semibold shadow-lg shadow-purple-500/30">
+                          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl font-semibold text-white shadow-md">
                             {selectedEmployeeAvatarInitial}
                           </div>
                           <div>
                             <div className="flex items-center gap-3 flex-wrap">
-                              <h3 className="text-2xl font-semibold text-white">
+                              <h3 className="text-2xl font-semibold text-gray-900">
                                 {selectedEmployeeName || 'Employee'}
                               </h3>
-                              <Badge className="bg-purple-500/20 text-purple-200 border border-purple-500/30">
+                              <Badge className="bg-blue-50 text-blue-700 border border-blue-200">
                                 #{selectedEmployeeDisplayId || '—'}
                               </Badge>
                             </div>
-                            <p className="text-slate-300 mt-1">
+                            <p className="text-gray-600 mt-1">
                               {selectedEmployeePosition || 'Role TBD'} ·{' '}
                               {selectedEmployeeDepartment || 'Department TBD'}
                             </p>
                             {selectedEmployeeManager && (
-                              <p className="text-sm text-slate-400 mt-2">
+                              <p className="text-sm text-gray-500 mt-2">
                                 Reporting to {selectedEmployeeManager}
                               </p>
                             )}
@@ -1436,11 +1436,11 @@ export const Employees = () => {
                                   ? 'Unavailable'
                                   : 'Evaluating'}
                           </div>
-                          <div className="text-slate-400">
+                          <div className="text-gray-600">
                             Joined {employmentOverview?.joined || formatDate(selectedEmployee.DateOfJoining) || '—'} ·{' '}
                             {employmentOverview?.employmentType || selectedEmployee.EmploymentType || 'Employment type pending'}
                           </div>
-                          <div className="text-slate-400">
+                          <div className="text-gray-600">
                             Experience:{' '}
                             {formattedExperienceYears
                               ? `${formattedExperienceYears} total`
@@ -1451,16 +1451,16 @@ export const Employees = () => {
                                   : 'Not recorded'}
                           </div>
                           {onboardingRecord && (
-                            <div className="flex flex-col gap-1 text-slate-400">
+                            <div className="flex flex-col gap-1 text-gray-600">
                               <span className="flex items-center gap-2">
-                                <ClipboardCheck className="w-3.5 h-3.5 text-purple-300" />
+                                <ClipboardCheck className="w-3.5 h-3.5 text-blue-500" />
                                 Onboarding status:{' '}
-                                <span className="uppercase text-xs tracking-wider text-purple-200">
+                                <span className="uppercase text-xs tracking-wider text-blue-700">
                                   {selectedEmployeeOnboardingProgress || onboardingRecord.status || 'Active'}
                                 </span>
                               </span>
                               {taskProgress.total > 0 && (
-                                <span className="text-xs text-slate-500">
+                                <span className="text-xs text-gray-500">
                                   {taskProgress.completed}/{taskProgress.total} tasks completed (
                                   {taskProgress.completionPercentage}%)
                                 </span>
@@ -1477,14 +1477,14 @@ export const Employees = () => {
                         {trackingCards.map((item) => (
                           <div
                             key={item.title}
-                            className={`rounded-xl border border-slate-700 bg-gradient-to-br ${item.accent} p-4`}
+                            className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:border-blue-200 hover:shadow-md transition-all duration-200 group"
                           >
-                            <div className="flex items-center justify-between text-sm text-slate-300">
+                            <div className="flex items-center justify-between text-sm text-gray-500">
                               <span>{item.title}</span>
-                              <item.icon className="w-4 h-4 text-purple-200" />
+                              <item.icon className="w-4 h-4 text-blue-500" />
                             </div>
-                            <p className="mt-2 text-xl font-semibold text-white">{item.value}</p>
-                            <p className="text-xs text-slate-400 mt-1">{item.description}</p>
+                            <p className="mt-2 text-xl font-semibold text-gray-900">{item.value}</p>
+                            <p className="text-xs text-gray-600 mt-1 leading-relaxed">{item.description}</p>
                           </div>
                         ))}
                       </div>
@@ -1550,9 +1550,9 @@ export const Employees = () => {
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm text-gray-700">
-                          <div className="flex items-center justify-between rounded-lg border border-slate-700/70 bg-slate-900/40 px-4 py-3">
-                            <span>Annual salary</span>
-                            <span className="font-medium text-emerald-300">
+                          <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+                            <span className="text-gray-700">Annual salary</span>
+                            <span className="font-medium text-gray-900">
                               {formatCurrency(
                                 (compensationOverview?.salary as number | undefined) ?? selectedEmployee.Salary,
                               )}
@@ -1592,7 +1592,7 @@ export const Employees = () => {
                               size="sm"
                               onClick={handleRefreshPrediction}
                               disabled={refreshingPrediction}
-                              className="border-slate-600/60 text-slate-200 hover:bg-slate-700/60"
+                              className="border-gray-300 text-gray-700 hover:bg-gray-100"
                             >
                               <RefreshCw
                                 className={`mr-2 h-4 w-4 ${refreshingPrediction ? 'animate-spin' : ''}`}
@@ -1603,29 +1603,29 @@ export const Employees = () => {
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm text-gray-700">
                           {/* Performance Score - Prominent Display */}
-                          <div className="rounded-lg border border-slate-600/50 bg-gradient-to-br from-slate-800/60 to-slate-900/60 p-4">
+                          <div className="rounded-lg border border-gray-200 bg-gray-50 p-5">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <div className="rounded-lg bg-emerald-500/20 p-2">
-                                  <Activity className="w-5 h-5 text-emerald-400" />
+                                <div className="rounded-lg bg-blue-100 p-2">
+                                  <Activity className="w-5 h-5 text-blue-600" />
                                 </div>
                                 <div>
-                                  <p className="text-xs uppercase tracking-wider text-slate-400">
+                                  <p className="text-xs uppercase tracking-wider text-gray-500">
                                     Performance Score (Forecast)
                                   </p>
                                   {performancePrediction?.current_performance_score !== undefined ? (
                                     <div className="flex items-baseline gap-2">
-                                      <span className="text-2xl font-bold text-white">
+                                      <span className="text-2xl font-bold text-gray-900">
                                         {performancePrediction.current_performance_score.toFixed(1)}
                                       </span>
-                                      <span className="text-sm text-slate-400">/ 100</span>
+                                      <span className="text-sm text-gray-500">/ 100</span>
                                       <Badge
                                         className={`ml-2 ${
                                           performancePrediction.current_performance_score >= 80
-                                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                                            ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
                                             : performancePrediction.current_performance_score >= 60
-                                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                                              : 'bg-red-500/20 text-red-300 border-red-500/30'
+                                              ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                              : 'bg-red-100 text-red-800 border-red-200'
                                         }`}
                                       >
                                         {performancePrediction.trend === 'increasing'
@@ -1637,23 +1637,23 @@ export const Employees = () => {
                                     </div>
                                   ) : performanceOverview?.score !== undefined ? (
                                     <div className="flex items-baseline gap-2">
-                                      <span className="text-2xl font-bold text-white">
+                                      <span className="text-2xl font-bold text-gray-900">
                                         {Number(performanceOverview.score).toFixed(1)}
                                       </span>
-                                      <span className="text-sm text-slate-400">/ 5</span>
-                                      <Badge className="ml-2 bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+                                      <span className="text-sm text-gray-500">/ 5</span>
+                                      <Badge className="ml-2 bg-emerald-100 text-emerald-800 border-emerald-200">
                                         Manual score
                                       </Badge>
                                     </div>
                                   ) : performanceLoading ? (
                                     <div className="flex items-center gap-2">
-                                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-600 border-t-emerald-400" />
-                                      <span className="text-slate-400">Calculating...</span>
+                                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-200 border-t-blue-500" />
+                                      <span className="text-gray-500">Calculating...</span>
                                     </div>
                                   ) : performanceError ? (
-                                    <span className="text-amber-400">Model unavailable</span>
+                                    <span className="text-amber-600">Model unavailable</span>
                                   ) : (
-                                    <span className="text-slate-400">No prediction available</span>
+                                    <span className="text-gray-500">No prediction available</span>
                                   )}
                                 </div>
                               </div>
@@ -1663,19 +1663,19 @@ export const Employees = () => {
                           {performancePrediction && (performanceHistory.length > 0 || performanceForecast.length > 0) && (
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                               <div>
-                                <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">
+                                <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
                                   Recent performance history
                                 </p>
-                                <div className="rounded-lg border border-slate-700/60 bg-slate-900/40 p-3">
-                                  <ul className="space-y-2 text-sm">
+                                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                  <ul className="space-y-2 text-sm text-gray-700">
                                     {performanceHistory.length > 0 ? (
                                       performanceHistory.slice(-6).map((entry, idx) => (
                                         <li
                                           key={`${entry.date}-${idx}`}
-                                          className="flex items-center justify-between text-slate-300"
+                                          className="flex items-center justify-between"
                                         >
                                           <span>{formatDate(entry.date) || entry.date}</span>
-                                          <span className="font-medium text-slate-100">
+                                          <span className="font-medium text-gray-900">
                                             {typeof entry.score === 'number'
                                               ? entry.score.toFixed(1)
                                               : Number(entry.score ?? 0).toFixed(1)}
@@ -1683,25 +1683,25 @@ export const Employees = () => {
                                         </li>
                                       ))
                                     ) : (
-                                      <li className="text-xs text-slate-500">No historical records available.</li>
+                                      <li className="text-xs text-gray-500">No historical records available.</li>
                                     )}
                                   </ul>
                                 </div>
                               </div>
                               <div>
-                                <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">
+                                <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
                                   Forecast (next {performanceForecast.length} period{performanceForecast.length === 1 ? '' : 's'})
                                 </p>
-                                <div className="rounded-lg border border-slate-700/60 bg-slate-900/40 p-3">
-                                  <ul className="space-y-2 text-sm">
+                                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                  <ul className="space-y-2 text-sm text-gray-700">
                                     {performanceForecast.length > 0 ? (
                                       performanceForecast.map((entry, idx) => (
                                         <li
                                           key={`${entry.date}-${idx}`}
-                                          className="flex items-center justify-between text-slate-300"
+                                          className="flex items-center justify-between"
                                         >
                                           <span>{formatDate(entry.date) || entry.date}</span>
-                                          <span className="font-medium text-emerald-300">
+                                          <span className="font-medium text-emerald-600">
                                             {typeof entry.predicted_score === 'number'
                                               ? entry.predicted_score.toFixed(1)
                                               : Number(entry.predicted_score ?? 0).toFixed(1)}
@@ -1709,7 +1709,7 @@ export const Employees = () => {
                                         </li>
                                       ))
                                     ) : (
-                                      <li className="text-xs text-slate-500">Forecast not available.</li>
+                                      <li className="text-xs text-gray-500">Forecast not available.</li>
                                     )}
                                   </ul>
                                 </div>
@@ -1730,48 +1730,48 @@ export const Employees = () => {
                           )}
 
                           {/* Attrition Risk - Prominent Display */}
-                          <div className="rounded-lg border border-slate-600/50 bg-gradient-to-br from-slate-800/60 to-slate-900/60 p-4">
+                          <div className="rounded-lg border border-gray-200 bg-gray-50 p-5">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 <div
                                   className={`rounded-lg p-2 ${
                                     attritionRisk
                                       ? attritionRisk.risk_level === 'high'
-                                        ? 'bg-red-500/20'
+                                        ? 'bg-red-100'
                                         : attritionRisk.risk_level === 'medium'
-                                          ? 'bg-amber-500/20'
-                                          : 'bg-emerald-500/20'
-                                      : 'bg-slate-700/40'
+                                          ? 'bg-amber-100'
+                                          : 'bg-emerald-100'
+                                      : 'bg-gray-200'
                                   }`}
                                 >
                                   <ShieldCheck
                                     className={`w-5 h-5 ${
                                       attritionRisk
                                         ? attritionRisk.risk_level === 'high'
-                                          ? 'text-red-400'
+                                          ? 'text-red-600'
                                           : attritionRisk.risk_level === 'medium'
-                                            ? 'text-amber-400'
-                                            : 'text-emerald-400'
-                                        : 'text-slate-400'
+                                            ? 'text-amber-600'
+                                            : 'text-emerald-600'
+                                        : 'text-gray-500'
                                     }`}
                                   />
                                 </div>
                                 <div>
-                                  <p className="text-xs uppercase tracking-wider text-slate-400">
+                                  <p className="text-xs uppercase tracking-wider text-gray-500">
                                     Attrition Risk
                                   </p>
                                   {attritionRisk ? (
                                     <div className="flex items-baseline gap-2">
-                                      <span className="text-2xl font-bold text-white">
+                                      <span className="text-2xl font-bold text-gray-900">
                                         {(attritionRisk.probability * 100).toFixed(1)}%
                                       </span>
                                       <Badge
                                         className={`ml-2 ${
                                           attritionRisk.risk_level === 'high'
-                                            ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                                            ? 'bg-red-100 text-red-800 border-red-200'
                                             : attritionRisk.risk_level === 'medium'
-                                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                                              : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                                              ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                              : 'bg-emerald-100 text-emerald-800 border-emerald-200'
                                         }`}
                                       >
                                         {attritionRisk.risk_level.toUpperCase()} RISK
@@ -1779,16 +1779,16 @@ export const Employees = () => {
                                     </div>
                                   ) : fallbackAttritionRisk ? (
                                     <div className="flex items-baseline gap-2">
-                                      <span className="text-2xl font-bold text-white">
+                                      <span className="text-2xl font-bold text-gray-900">
                                         {fallbackAttritionRisk}
                                       </span>
                                       <Badge
                                         className={`ml-2 ${
                                           normalizedRiskLevel === 'high'
-                                            ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                                            ? 'bg-red-100 text-red-800 border-red-200'
                                             : normalizedRiskLevel === 'medium'
-                                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                                              : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                                              ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                              : 'bg-emerald-100 text-emerald-800 border-emerald-200'
                                         }`}
                                       >
                                         Manual risk
@@ -1796,22 +1796,22 @@ export const Employees = () => {
                                     </div>
                                   ) : attritionLoading ? (
                                     <div className="flex items-center gap-2">
-                                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-600 border-t-red-400" />
-                                      <span className="text-slate-400">Scoring...</span>
+                                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-200 border-t-blue-500" />
+                                      <span className="text-gray-500">Scoring...</span>
                                     </div>
                                   ) : attritionError ? (
-                                    <span className="text-amber-400">
+                                    <span className="text-amber-600">
                                       Model unavailable for this employee
                                     </span>
                                   ) : (
-                                    <span className="text-slate-400">No data available</span>
+                                    <span className="text-gray-500">No data available</span>
                                   )}
                                 </div>
                               </div>
                             </div>
                           </div>
 
-                          <div className="border-t border-slate-700 pt-4">
+                          <div className="border-t border-gray-200 pt-4">
                             <InfoRow
                               icon={TrendingUp}
                               label="Last performance review"
@@ -1838,7 +1838,7 @@ export const Employees = () => {
                         <CardTitle className="text-lg text-gray-900 flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
                           <span>Onboarding & task tracking</span>
                           {onboardingRecord?.start_date && (
-                            <span className="text-xs uppercase tracking-wider text-slate-500">
+                            <span className="text-xs uppercase tracking-wider text-gray-600">
                               Start date: {formatDate(onboardingRecord.start_date) || '—'}
                             </span>
                           )}
@@ -1846,19 +1846,19 @@ export const Employees = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         {onboardingLoading ? (
-                          <div className="flex flex-col items-center justify-center gap-3 py-6 text-slate-400">
-                            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-700 border-t-purple-500" />
+                          <div className="flex flex-col items-center justify-center gap-3 py-6 text-gray-600">
+                            <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-500" />
                             <p className="text-sm">Fetching onboarding plan…</p>
                           </div>
                         ) : onboardingError ? (
-                          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-amber-200">
+                          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
                             Unable to load onboarding data for this employee.{' '}
                             {onboardingError instanceof Error
                               ? onboardingError.message
                               : String(onboardingError)}
                           </div>
                         ) : taskProgress.total === 0 ? (
-                          <div className="rounded-lg border border-slate-700/70 bg-slate-900/40 p-4 text-sm text-slate-300">
+                          <div className="rounded-lg border border-gray-200 bg-gray-100 p-5 text-sm text-gray-800 leading-relaxed">
                             No onboarding plan is recorded for this employee yet. Create one from the
                             onboarding agent when the employee is newly hired to start tracking tasks,
                             documents, and buddy assignments.
@@ -1866,13 +1866,13 @@ export const Employees = () => {
                         ) : (
                           <>
                             <div>
-                              <div className="flex items-center justify-between text-xs text-slate-400">
+                              <div className="flex items-center justify-between text-xs text-gray-600">
                                 <span>Completion</span>
-                                <span>{taskProgress.completionPercentage}%</span>
+                                <span className="font-medium text-gray-900">{taskProgress.completionPercentage}%</span>
                               </div>
-                              <div className="mt-2 h-2 w-full rounded-full bg-slate-700/60">
+                              <div className="mt-2 h-2 w-full rounded-full bg-gray-200">
                                 <div
-                                  className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 transition-all"
+                                  className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all"
                                   style={{
                                     width: `${Math.min(taskProgress.completionPercentage, 100)}%`,
                                   }}
@@ -1894,32 +1894,32 @@ export const Employees = () => {
                                         : 'Pending';
                                 const statusClasses =
                                   normalizedStatus === 'completed'
-                                    ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-200'
+                                    ? 'bg-emerald-100 border border-emerald-200 text-emerald-800'
                                     : normalizedStatus === 'in-progress' ||
                                         normalizedStatus === 'ongoing'
-                                      ? 'bg-blue-500/10 border border-blue-500/30 text-blue-200'
+                                      ? 'bg-blue-100 border border-blue-200 text-blue-800'
                                       : normalizedStatus === 'blocked'
-                                        ? 'bg-red-500/10 border border-red-500/30 text-red-200'
-                                        : 'bg-slate-800/60 border border-slate-700 text-slate-300';
+                                        ? 'bg-red-100 border border-red-200 text-red-800'
+                                        : 'bg-gray-100 border border-gray-200 text-gray-700';
 
                                 return (
                                   <div
                                     key={`${task.task || task.description || 'task'}-${idx}`}
-                                    className="flex flex-col gap-3 rounded-xl border border-slate-700/70 bg-slate-900/50 px-4 py-3 sm:flex-row sm:items-start sm:justify-between"
+                                    className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 sm:flex-row sm:items-start sm:justify-between shadow-sm"
                                   >
                                     <div className="space-y-1">
-                                      <p className="text-sm font-medium text-white">
+                                      <p className="text-sm font-medium text-gray-900">
                                         {task.task || task.description || 'Onboarding task'}
                                       </p>
                                       {task.description && (
-                                        <p className="text-xs text-slate-400">{task.description}</p>
+                                        <p className="text-xs text-gray-600 leading-relaxed">{task.description}</p>
                                       )}
-                                      <div className="flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-wider text-slate-500">
+                                      <div className="flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-wider text-gray-500">
                                         {task.owner && <span>Owner: {task.owner}</span>}
                                         {task.category && <span>Category: {task.category}</span>}
                                       </div>
                                     </div>
-                                    <div className="flex flex-col items-start gap-2 text-xs text-slate-400 sm:items-end">
+                                    <div className="flex flex-col items-start gap-2 text-xs text-gray-600 sm:items-end">
                                       <span>
                                         Due:{' '}
                                         {task.due_date
@@ -1939,7 +1939,7 @@ export const Employees = () => {
                             </div>
 
                             {taskProgress.total > 6 && (
-                              <p className="text-xs text-slate-500">
+                              <p className="text-xs text-gray-600">
                                 Showing 6 of {taskProgress.total} onboarding tasks.
                               </p>
                             )}
@@ -2014,32 +2014,32 @@ export const Employees = () => {
                             return (
                               <div
                                 key={`history-${idx}`}
-                                className="flex flex-col gap-3 rounded-xl border border-slate-700/70 bg-slate-900/40 p-4 md:flex-row md:items-start md:gap-4"
+                                className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 md:flex-row md:items-start md:gap-4 shadow-sm"
                               >
-                                <div className="flex items-center gap-3 text-slate-300 md:w-1/3">
-                                  <div className="rounded-xl bg-slate-800/80 p-3">
-                                    <Briefcase className="w-4 h-4 text-purple-200" />
+                                <div className="flex items-center gap-3 md:w-1/3">
+                                  <div className="rounded-xl bg-blue-50 p-3">
+                                    <Briefcase className="w-4 h-4 text-blue-600" />
                                   </div>
                                   <div>
-                                    <p className="text-sm font-semibold text-white">
+                                    <p className="text-sm font-semibold text-gray-900">
                                       {role || 'Role information'}
                                     </p>
-                                    <p className="text-xs text-slate-400">
+                                    <p className="text-xs text-gray-600">
                                       {department || selectedEmployeeDepartment || 'Department'}
                                     </p>
                                   </div>
                                 </div>
-                                <div className="flex-1 space-y-2 text-sm text-slate-300">
-                                  <p className="text-xs text-slate-500">
+                                <div className="flex-1 space-y-2 text-sm">
+                                  <p className="text-xs text-gray-600 font-medium">
                                     {start || end
                                       ? `${formatDateRange(start, end)} • ${calculateDurationBetween(start, end)}`
                                       : durationText || 'Duration not recorded'}
                                   </p>
                                   {responsibilitiesText && (
-                                    <p className="text-sm text-slate-300">{responsibilitiesText}</p>
+                                    <p className="text-sm text-gray-700 leading-relaxed">{responsibilitiesText}</p>
                                   )}
                                   {achievementsList && achievementsList.length > 0 && (
-                                    <ul className="list-disc space-y-1 pl-4 text-xs text-slate-400">
+                                    <ul className="list-disc space-y-1 pl-4 text-xs text-gray-600">
                                       {achievementsList.slice(0, 4).map((item, achievementIdx) => (
                                         <li key={`achievement-${idx}-${achievementIdx}`}>
                                           {String(item)}
@@ -2052,7 +2052,7 @@ export const Employees = () => {
                             );
                           })
                         ) : (
-                          <p className="text-sm text-slate-400">
+                          <p className="text-sm text-gray-600 leading-relaxed">
                             No historical records were found for this employee. Use the onboarding or
                             database manager agents to enrich employment history.
                           </p>
@@ -2077,14 +2077,14 @@ export const Employees = () => {
                           )}
                           {skills && skills.length > 0 && (
                             <div>
-                              <p className="text-xs uppercase tracking-wider text-slate-500">
+                              <p className="text-xs uppercase tracking-wider text-gray-500">
                                 Core skills
                               </p>
                               <div className="mt-2 flex flex-wrap gap-2">
                                 {skills.map((skill: string) => (
                                   <span
                                     key={skill}
-                                    className="rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs text-purple-200"
+                                    className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs text-blue-800"
                                   >
                                     {skill}
                                   </span>
@@ -2095,22 +2095,22 @@ export const Employees = () => {
 
                           {selectedEmployee?.Projects && selectedEmployee.Projects.length > 0 && (
                             <div className="space-y-3">
-                              <p className="text-xs uppercase tracking-wider text-slate-500">
+                              <p className="text-xs uppercase tracking-wider text-gray-500">
                                 Active projects
                               </p>
                               <div className="space-y-2">
                                 {selectedEmployee.Projects.map((project, idx) => (
                                   <div
                                     key={`${project.name}-${idx}`}
-                                    className="flex items-center justify-between rounded-lg border border-slate-700/60 bg-slate-900/40 px-4 py-3 text-sm text-slate-300"
+                                    className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm"
                                   >
                                     <div>
-                                      <p className="font-medium text-white">{project.name}</p>
-                                      <p className="text-xs text-slate-400">
+                                      <p className="font-medium text-gray-900">{project.name}</p>
+                                      <p className="text-xs text-gray-600">
                                         Role: {project.role || 'Contributor'}
                                       </p>
                                     </div>
-                                    <span className="rounded-full border border-slate-700/60 bg-slate-800/60 px-3 py-1 text-xs text-slate-400">
+                                    <span className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700 font-medium">
                                       {project.status || 'In progress'}
                                     </span>
                                   </div>
@@ -2131,7 +2131,7 @@ export const Employees = () => {
                       </CardHeader>
                       <CardContent>
                         {timelineEvents.length === 0 ? (
-                          <p className="text-sm text-slate-400">
+                          <p className="text-sm text-gray-600">
                             Tracking data is not yet available for this employee.
                           </p>
                         ) : (
@@ -2139,10 +2139,10 @@ export const Employees = () => {
                             {timelineEvents.map((event, index) => {
                               const statusStyles =
                                 event.status === 'completed'
-                                  ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-200'
+                                  ? 'bg-emerald-100 border border-emerald-200 text-emerald-700'
                                   : event.status === 'current'
-                                    ? 'bg-purple-500/10 border border-purple-500/30 text-purple-200'
-                                    : 'bg-slate-800/80 border border-slate-700 text-slate-200';
+                                    ? 'bg-blue-100 border border-blue-200 text-blue-700'
+                                    : 'bg-gray-100 border border-gray-200 text-gray-700';
                               const statusLabel =
                                 event.status === 'completed'
                                   ? 'Completed'
@@ -2157,20 +2157,20 @@ export const Employees = () => {
                                       <event.icon className="w-4 h-4" />
                                     </div>
                                     {index !== timelineEvents.length - 1 && (
-                                      <div className="mt-2 h-full w-px bg-slate-700" />
+                                      <div className="mt-2 h-full w-px bg-gray-200" />
                                     )}
                                   </div>
-                                  <div className="flex-1 space-y-1">
+                                  <div className="flex-1 space-y-1 min-w-0">
                                     <div className="flex flex-wrap items-center gap-2">
-                                      <span className="text-sm font-semibold text-white">
+                                      <span className="text-sm font-semibold text-gray-900">
                                         {event.title}
                                       </span>
-                                      <span className="rounded-full border border-slate-700/70 bg-slate-900/60 px-2 py-0.5 text-[10px] uppercase tracking-widest text-slate-400">
+                                      <span className="rounded-full border border-gray-200 bg-gray-100 px-2 py-0.5 text-[10px] uppercase tracking-widest text-gray-600 font-medium">
                                         {statusLabel}
                                       </span>
                                     </div>
-                                    <p className="text-sm text-slate-300">{event.description}</p>
-                                    <p className="text-xs text-slate-500">
+                                    <p className="text-sm text-gray-700 leading-relaxed">{event.description}</p>
+                                    <p className="text-xs text-gray-500">
                                       {event.date || 'Date to be confirmed'}
                                     </p>
                                   </div>

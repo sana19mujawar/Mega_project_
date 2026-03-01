@@ -12,19 +12,19 @@ const WORKFLOW_STEPS = [
     id: 'parse_request',
     name: 'Parse Request',
     description: 'Extract meeting details from natural language',
-    api: 'POST /api/v1/agents/schedule-meeting',
+    api: '',
   },
   {
     id: 'find_slots',
     name: 'Find Available Slots',
     description: 'Check calendar and find available time slots',
-    api: 'POST /api/v1/agents/schedule-meeting',
+    api: '',
   },
   {
     id: 'schedule',
     name: 'Schedule Meeting',
     description: 'Create meeting record and send calendar invites',
-    api: 'POST /api/v1/agents/schedule-meeting',
+    api: '',
   },
 ];
 
@@ -63,11 +63,11 @@ export const MeetingSchedulerAgentInterface = () => {
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex items-center gap-3 mb-2">
-          <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-3 rounded-lg">
+          <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-3 rounded-lg">
             <Calendar className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               Meeting Scheduler Agent
             </h2>
             <p className="text-slate-600 mt-1">Automated interview scheduling with conflict resolution</p>
@@ -79,7 +79,7 @@ export const MeetingSchedulerAgentInterface = () => {
         <Card className="border-0 shadow-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-green-500" />
+              <Clock className="w-5 h-5 text-blue-500" />
               Workflow Steps
             </CardTitle>
           </CardHeader>
@@ -91,16 +91,22 @@ export const MeetingSchedulerAgentInterface = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors group"
+                  className="border-2 border-slate-200 rounded-lg p-5 cursor-pointer transition-all duration-200 ease-out group bg-white hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-md"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-semibold text-white group-hover:text-black transition-colors">{step.name}</h4>
-                    <Badge variant="secondary" className="group-hover:text-black">Step {index + 1}</Badge>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold text-sm text-slate-700 group-hover:text-slate-900 transition-colors duration-200">
+                      {step.name}
+                    </h4>
+                    <Badge variant="secondary" className="text-xs shrink-0">Step {index + 1}</Badge>
                   </div>
-                  <p className="text-sm text-white group-hover:text-black transition-colors mb-2">{step.description}</p>
-                  <div className="bg-slate-100 rounded px-2 py-1 text-xs font-mono text-black group-hover:text-black">
-                    {step.api}
-                  </div>
+                  <p className="text-xs text-slate-500 group-hover:text-slate-700 leading-relaxed transition-colors duration-200">
+                    {step.description}
+                  </p>
+                  {step.api ? (
+                    <div className="mt-2 bg-slate-100 rounded px-2 py-1 text-xs font-mono text-slate-700">
+                      {step.api}
+                    </div>
+                  ) : null}
                 </motion.div>
               ))}
             </div>
@@ -110,7 +116,7 @@ export const MeetingSchedulerAgentInterface = () => {
         <Card className="border-0 shadow-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Send className="w-5 h-5 text-green-500" />
+              <Send className="w-5 h-5 text-blue-500" />
               Schedule Meeting
             </CardTitle>
           </CardHeader>
@@ -153,7 +159,7 @@ export const MeetingSchedulerAgentInterface = () => {
               <Button
                 onClick={handleScheduleMeeting}
                 disabled={loading || (!query && !participants)}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
               >
                 {loading ? 'Scheduling...' : 'Schedule Meeting'}
               </Button>
@@ -167,15 +173,15 @@ export const MeetingSchedulerAgentInterface = () => {
                   {result.success && result.data?.meeting ? (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Mail className="w-5 h-5 text-green-600" />
-                        <span className="font-semibold text-green-700">Meeting Scheduled!</span>
+                        <Mail className="w-5 h-5 text-blue-600" />
+                        <span className="font-semibold text-blue-700">Meeting Scheduled!</span>
                       </div>
                       <div className="text-sm space-y-1">
                         <p><strong>Date:</strong> {result.data.meeting.InterviewDate}</p>
                         <p><strong>Time:</strong> {result.data.meeting.InterviewTime}</p>
                         <p><strong>Duration:</strong> {result.data.meeting.Duration} minutes</p>
                         <p><strong>Subject:</strong> {result.data.meeting.Subject}</p>
-                        <p className="text-green-600 mt-2">✓ Calendar invites sent to all participants</p>
+                        <p className="text-blue-600 mt-2">✓ Calendar invites sent to all participants</p>
                       </div>
                     </div>
                   ) : (

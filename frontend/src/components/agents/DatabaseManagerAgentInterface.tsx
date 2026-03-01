@@ -11,28 +11,28 @@ const WORKFLOW_STEPS = [
     id: 'parse_query',
     name: 'Parse Natural Language Query',
     description: 'Convert natural language to MongoDB operations',
-    api: 'POST /api/v1/chatbot/ask',
+    api: '',
     icon: Search,
   },
   {
     id: 'validate_collection',
     name: 'Validate Collection',
     description: 'Check if collection exists and validate field names',
-    api: 'Automatic validation',
+    api: '',
     icon: Database,
   },
   {
     id: 'execute_operation',
     name: 'Execute Database Operation',
     description: 'Perform find, insert, update, or delete operations',
-    api: 'MongoDB operations',
+    api: '',
     icon: FileText,
   },
   {
     id: 'format_response',
     name: 'Format Response',
     description: 'Convert results to natural language format',
-    api: 'Automatic formatting',
+    api: '',
     icon: FileText,
   },
 ];
@@ -135,11 +135,11 @@ export const DatabaseManagerAgentInterface = () => {
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex items-center gap-3 mb-2">
-          <div className="bg-gradient-to-br from-teal-500 to-cyan-500 p-3 rounded-lg">
+          <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-3 rounded-lg">
             <Database className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               Database Manager Agent
             </h2>
             <p className="text-slate-600 mt-1">Natural language database queries and operations</p>
@@ -152,7 +152,7 @@ export const DatabaseManagerAgentInterface = () => {
         <Card className="border-0 shadow-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Database className="w-5 h-5 text-teal-500" />
+              <Database className="w-5 h-5 text-blue-500" />
               Workflow Steps
             </CardTitle>
           </CardHeader>
@@ -166,23 +166,29 @@ export const DatabaseManagerAgentInterface = () => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors group"
+                    className="border-2 border-slate-200 rounded-lg p-5 cursor-pointer transition-all duration-200 ease-out group bg-white hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-md"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="bg-teal-100 p-2 rounded-lg">
-                        <Icon className="w-5 h-5 text-teal-600" />
+                      <div className="bg-blue-100 p-2 rounded-lg shrink-0">
+                        <Icon className="w-5 h-5 text-blue-600" />
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold text-white group-hover:text-black transition-colors">{step.name}</h4>
-                          <Badge variant="secondary" className="text-xs group-hover:text-black">
+                          <h4 className="font-semibold text-sm text-slate-700 group-hover:text-slate-900 transition-colors duration-200">
+                            {step.name}
+                          </h4>
+                          <Badge variant="secondary" className="text-xs shrink-0">
                             Step {index + 1}
                           </Badge>
                         </div>
-                        <p className="text-sm text-white group-hover:text-black transition-colors mb-2">{step.description}</p>
-                        <div className="bg-slate-100 rounded px-2 py-1 text-xs font-mono text-black group-hover:text-black">
-                          {step.api}
-                        </div>
+                        <p className="text-sm text-slate-500 group-hover:text-slate-700 leading-relaxed transition-colors duration-200">
+                          {step.description}
+                        </p>
+                        {step.api ? (
+                          <div className="mt-2 bg-slate-100 rounded px-2 py-1 text-xs font-mono text-slate-700">
+                            {step.api}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                   </motion.div>
@@ -196,7 +202,7 @@ export const DatabaseManagerAgentInterface = () => {
         <Card className="border-0 shadow-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Send className="w-5 h-5 text-teal-500" />
+              <Send className="w-5 h-5 text-blue-500" />
               Database Query
             </CardTitle>
           </CardHeader>
@@ -230,7 +236,7 @@ export const DatabaseManagerAgentInterface = () => {
               <Button
                 onClick={handleQuery}
                 disabled={loading || !query.trim()}
-                className="w-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white hover:opacity-90"
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:opacity-90"
               >
                 {loading ? 'Executing Query...' : 'Execute Query'}
               </Button>
@@ -321,8 +327,8 @@ export const DatabaseManagerAgentInterface = () => {
                   className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors"
                 >
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="bg-teal-100 p-2 rounded-lg">
-                      <Icon className="w-5 h-5 text-teal-600" />
+                    <div className="bg-blue-100 p-2 rounded-lg">
+                      <Icon className="w-5 h-5 text-blue-600" />
                     </div>
                     <div className="flex-1">
                       <h4 className="font-semibold mb-1">{op.name}</h4>
@@ -335,7 +341,7 @@ export const DatabaseManagerAgentInterface = () => {
                       <button
                         key={idx}
                         onClick={() => handleExampleClick(example)}
-                        className="text-xs text-teal-600 hover:text-teal-700 hover:underline block w-full text-left"
+                        className="text-xs text-blue-600 hover:text-blue-700 hover:underline block w-full text-left"
                       >
                         • {example}
                       </button>
