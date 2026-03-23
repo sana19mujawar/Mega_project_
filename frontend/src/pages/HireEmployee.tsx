@@ -24,6 +24,16 @@ interface ScreeningResult {
   };
 }
 
+interface BulkScreeningRow {
+  filename: string;
+  overall_score: number | null;
+  candidate_name: string | null;
+  candidate_email: string | null;
+  screening_id?: string | null;
+  score?: { overall_score?: number; recommendation?: string } | null;
+  error?: string;
+}
+
 export const HireEmployee = () => {
   const queryClient = useQueryClient();
   const [resumeText, setResumeText] = useState('');
@@ -35,6 +45,9 @@ export const HireEmployee = () => {
   const [scheduleQuery, setScheduleQuery] = useState('');
   const [isScheduling, setIsScheduling] = useState(false);
   const [meetingResult, setMeetingResult] = useState<any>(null);
+  const [bulkFiles, setBulkFiles] = useState<File[]>([]);
+  const [bulkResults, setBulkResults] = useState<BulkScreeningRow[] | null>(null);
+  const [isBulkScreening, setIsBulkScreening] = useState(false);
 
   // Fetch available jobs
   const { data: jobsData, isLoading: jobsLoading } = useQuery({
@@ -179,6 +192,96 @@ export const HireEmployee = () => {
     } finally {
       setIsScreening(false);
     }
+  };
+
+  const handleBulkFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) {
+      setBulkFiles([]);
+      setBulkResults(null);
+      return;
+    }
+    if (files.length > 50) {
+      alert('You can upload a maximum of 50 resumes at a time. Only the first 50 will be used.');
+    }
+    setBulkFiles(files.slice(0, 50));
+    setBulkResults(null);
+  };
+
+  const readFileAsText = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve((reader.result as string) || '');
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsText(file);
+    });
+
+  const handleBulkScreenResumes = async () => {
+    if (bulkFiles.length < 2) {
+      alert('Bulk screening requires 2 to 50 resumes. Please select at least 2 files.');
+      return;
+    }
+    try {
+      setIsBulkScreening(true);
+      setBulkResults(null);
+      const payloadResumes = await Promise.all(
+        bulkFiles.map(async (file) => ({
+          filename: file.name,
+          resume_text: await readFileAsText(file),
+        })),
+      );
+      const result = await agentsService.screenResumesBatch(
+        payloadResumes,
+        jobId || undefined,
+        selectedRole?.department,
+        selectedRole?.role,
+      );
+      if (!result?.success || !Array.isArray(result.data)) {
+        alert(result?.message || 'Bulk screening failed.');
+        return;
+      }
+      setBulkResults(result.data as BulkScreeningRow[]);
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { detail?: string } }; message?: string };
+      alert(err?.response?.data?.detail || err?.message || 'Error during bulk screening');
+    } finally {
+      setIsBulkScreening(false);
+    }
+  };
+
+  const handleDownloadBulkSheet = () => {
+    if (!bulkResults || bulkResults.length === 0) return;
+    const header = ['Rank', 'Filename', 'Candidate Name', 'Email', 'Score', 'Recommendation'];
+    const rows = bulkResults.map((row, index) => {
+      const score = row.overall_score ?? row.score?.overall_score ?? '';
+      const recommendation = row.score?.recommendation ?? '';
+      return [
+        String(index + 1),
+        row.filename ?? '',
+        row.candidate_name ?? '',
+        row.candidate_email ?? '',
+        score === null ? '' : String(score),
+        recommendation,
+      ];
+    });
+    const escapeCsv = (value: string) => {
+      if (value.includes('"') || value.includes(',') || value.includes('\n')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    };
+    const csvContent = [header, ...rows]
+      .map((cols) => cols.map((col) => escapeCsv(String(col ?? ''))).join(','))
+      .join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `bulk_resume_scores_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleScheduleMeeting = async () => {
@@ -385,6 +488,121 @@ export const HireEmployee = () => {
                 </Button>
               </CardContent>
             </Card>
+
+          {/* Bulk Resume Screening */}
+          <Card className="border border-gray-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-gray-900">
+                <FileText className="w-5 h-5" />
+                Bulk Resume Screening (2–50 files)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload Multiple Resumes
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50">
+                  <input
+                    type="file"
+                    accept=".txt,.pdf,.doc,.docx"
+                    multiple
+                    onChange={handleBulkFilesChange}
+                    className="hidden"
+                    id="bulk-resume-upload"
+                  />
+                  <label
+                    htmlFor="bulk-resume-upload"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
+                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-700">
+                      Click to upload 2 to 50 resumes
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      TXT, PDF, DOC, DOCX (text content used for scoring)
+                    </p>
+                  </label>
+                  {bulkFiles.length > 0 && (
+                    <p className={`mt-3 text-xs ${bulkFiles.length >= 2 && bulkFiles.length <= 50 ? 'text-gray-600' : 'text-amber-600'}`}>
+                      Selected {bulkFiles.length} file{bulkFiles.length === 1 ? '' : 's'}
+                      {bulkFiles.length === 1 && ' — add at least one more for bulk screening (2–50).'}
+                      {bulkFiles.length > 50 && ' — only the first 50 will be used.'}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                onClick={handleBulkScreenResumes}
+                disabled={bulkFiles.length < 2 || bulkFiles.length > 50 || isBulkScreening}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isBulkScreening ? 'Screening all resumes…' : 'Run Bulk Screening'}
+              </Button>
+
+              {bulkResults && bulkResults.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <p className="text-sm text-gray-700">
+                      {bulkResults.length} resumes screened. Top 10 highlighted for consideration.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDownloadBulkSheet}
+                      className="border-gray-300 text-gray-700"
+                    >
+                      Download CSV sheet
+                    </Button>
+                  </div>
+                  <div className="overflow-x-auto max-h-80 border border-gray-200 rounded-lg">
+                    <table className="min-w-full text-sm text-left">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="px-3 py-2 border-b text-gray-800">Rank</th>
+                          <th className="px-3 py-2 border-b text-gray-800">Filename</th>
+                          <th className="px-3 py-2 border-b text-gray-800">Candidate Name</th>
+                          <th className="px-3 py-2 border-b text-gray-800">Email</th>
+                          <th className="px-3 py-2 border-b text-gray-800">Score</th>
+                          <th className="px-3 py-2 border-b text-gray-800">Recommendation</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {bulkResults.map((row, index) => {
+                          const score = row.overall_score ?? row.score?.overall_score ?? null;
+                          const recommendation = row.score?.recommendation ?? (row.error || '—');
+                          const isTop10 = index < 10;
+                          return (
+                            <tr
+                              key={row.screening_id || row.filename || index}
+                              className={isTop10 ? 'bg-blue-50' : 'bg-white'}
+                            >
+                              <td className="px-3 py-2 border-b text-gray-700 font-medium">{index + 1}</td>
+                              <td className="px-3 py-2 border-b text-gray-700">{row.filename}</td>
+                              <td className="px-3 py-2 border-b text-gray-700">
+                                {row.candidate_name ?? '—'}
+                              </td>
+                              <td className="px-3 py-2 border-b text-gray-700">
+                                {row.candidate_email ?? '—'}
+                              </td>
+                              <td className="px-3 py-2 border-b text-gray-700">
+                                {score !== null ? score : '—'}
+                              </td>
+                              <td className="px-3 py-2 border-b text-gray-700">
+                                {recommendation}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Screening Results */}
           {screeningResult && (

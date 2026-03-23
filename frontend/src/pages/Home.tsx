@@ -17,7 +17,7 @@ export const Home = () => {
     {
       icon: Bot,
       title: 'AI-Powered Automation',
-      description: 'Intelligent agents for resume screening, onboarding, interview coordination, and document generation.',
+      description: 'Intelligent agents for talent acquisition, employee lifecycle, HR insights, and knowledge & action.',
     },
     {
       icon: BarChart3,
