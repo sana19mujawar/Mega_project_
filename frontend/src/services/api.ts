@@ -187,6 +187,20 @@ export const agentsService = {
     });
     return response.data;
   },
+  screenResumesBatch: async (
+    resumes: { filename: string; resume_text: string }[],
+    jobId?: string,
+    department?: string,
+    jobRole?: string,
+  ) => {
+    const response = await api.post('/agents/resume-screening/batch', {
+      resumes,
+      job_id: jobId,
+      job_role: jobRole,
+      department,
+    });
+    return response.data;
+  },
   scheduleMeeting: async (query: string, participants?: string[], duration?: number) => {
     const response = await api.post('/agents/schedule-meeting', {
       user_query: query,

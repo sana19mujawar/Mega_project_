@@ -27,6 +27,19 @@ class ResumeScreeningRequest(BaseModel):
     job_role: Optional[str] = None
     department: Optional[str] = None
 
+
+class ResumeItem(BaseModel):
+    filename: str
+    resume_text: str
+
+
+class ResumeBatchScreeningRequest(BaseModel):
+    resumes: List[ResumeItem]
+    job_id: Optional[str] = None
+    job_role: Optional[str] = None
+    department: Optional[str] = None
+
+
 class ScheduleMeetingRequest(BaseModel):
     user_query: str
     participants: Optional[List[str]] = None
@@ -82,6 +95,101 @@ async def screen_resume(request: ResumeScreeningRequest):
         logger = logging.getLogger(__name__)
         logger.error(f"Error in screen_resume: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/agents/resume-screening/batch")
+async def screen_resumes_batch(request: ResumeBatchScreeningRequest):
+    """Screen up to 50 resumes in one request and return ranked scores."""
+    try:
+        if not request.resumes:
+            raise HTTPException(status_code=400, detail="No resumes provided")
+        if len(request.resumes) < 2:
+            raise HTTPException(status_code=400, detail="Bulk screening requires at least 2 resumes")
+        if len(request.resumes) > 50:
+            raise HTTPException(status_code=400, detail="Maximum 50 resumes allowed per batch")
+
+        agent = ResumeScreeningAgent()
+        job_identifier = request.job_id or request.job_role
+        department = (request.department or "").strip()
+
+        if not job_identifier:
+            db = get_database()
+            if department and department.upper() != "N/A":
+                doc = await db["Jobs"].find_one({"Department": department, "Status": "Open"})
+                if not doc:
+                    doc = await db["Jobs"].find_one({"Department": department})
+            else:
+                doc = await db["Jobs"].find_one({"Status": "Open"})
+                if not doc:
+                    doc = await db["Jobs"].find_one({})
+            if not doc:
+                return {
+                    "success": False,
+                    "message": "No jobs available for screening",
+                    "data": None,
+                }
+            job_identifier = doc.get("JobID") or doc.get("Position") or str(doc.get("_id"))
+            department = doc.get("Department", department)
+
+        if not job_identifier:
+            return {
+                "success": False,
+                "message": "No job selected. Provide job_id or department.",
+                "data": None,
+            }
+
+        results: List[Dict[str, Any]] = []
+
+        for item in request.resumes:
+            single = await agent.screen_resume(
+                item.resume_text,
+                job_identifier,
+                job_role=request.job_role,
+                department=department or None,
+            )
+
+            if isinstance(single, dict) and single.get("error"):
+                results.append({
+                    "filename": item.filename,
+                    "error": single.get("error"),
+                    "overall_score": None,
+                    "candidate_name": None,
+                    "candidate_email": None,
+                    "screening_id": None,
+                    "score": None,
+                    "candidate_data": None,
+                })
+                continue
+
+            score_dict = (single or {}).get("score") or {}
+            overall_score = score_dict.get("overall_score", 0)
+            results.append({
+                "filename": item.filename,
+                "overall_score": overall_score,
+                "candidate_name": single.get("candidate_name")
+                    or (single.get("candidate_data") or {}).get("name")
+                    or "Unknown",
+                "candidate_email": single.get("candidate_email")
+                    or (single.get("candidate_data") or {}).get("email")
+                    or "",
+                "screening_id": single.get("_id"),
+                "score": score_dict,
+                "candidate_data": single.get("candidate_data"),
+            })
+
+        results_sorted = sorted(
+            results,
+            key=lambda r: (r["overall_score"] is not None, r.get("overall_score") or 0),
+            reverse=True,
+        )
+
+        return {"success": True, "data": results_sorted}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error in screen_resumes_batch: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/agents/resume-screening/workflow")
 async def screen_resume_workflow(request: ResumeScreeningRequest):
